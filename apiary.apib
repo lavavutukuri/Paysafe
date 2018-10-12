@@ -944,10 +944,21 @@ The settlement details in case of Card payment method can be sent through Reques
     + Body
 
             {
-                "amount": "?",
-                "customer": {
+                "merchantRefNum":"123sdfsdfsdf",
+                "amount": "100",
+                "storedCredential": {
+                     "type": "ADHOC",
+                     "occurance": "INITIAL"
+                },
+                "profile": {
                     "firstName": "John",
                     "lastName": "Smith",
+                    "middleName": "sdfsd",
+                    "phone": "3245678",
+                    "gender": "MALE",
+                    "nationality": "INDIAN",
+                    "cellPhone": "1923218328",
+                    "locale": ""
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -962,10 +973,13 @@ The settlement details in case of Card payment method can be sent through Reques
                     "city": "Toronto",
                     "zip": "M5H 2N2",
                     "country": "CA",
-                    "state": "ON"
+                    "state": "ON",
+                    "phone": "345345435",
+                    "recipientName": ""
                 },
-                "paymentMethod": "SKRILL",
-                "type": "SINGLE_USE",
+                "paymentType": "SKRILL",
+                "currency": "USD",
+                "returnUrl": "www.merchanturl.com",
                 "skrill": {
                     "consumerId": "john.doe@email.com",
                     "recipientDescription":"logo_url_alt_text",
@@ -982,10 +996,26 @@ The settlement details in case of Card payment method can be sent through Reques
 
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "?",
-                "customer": {
+                "status": "PENDING",
+                "amount": "100",
+                "merchantRefNum": "12345",
+                "storedCredential": {
+                     "type": "ADHOC",
+                     "occurance": "INITIAL"
+                },
+                "profile": {
+                    "id": "12345",
+                    "status": "PAYABLE",
+                    "merchantCustomerId": "JSHDDS",
+                    "paymentToken": "HSAFDYSFD",
                     "firstName": "John",
                     "lastName": "Smith",
+                    "middleName": "sdfsd",
+                    "phone": "3245678",
+                    "gender": "MALE",
+                    "nationality": "INDIAN",
+                    "cellPhone": "1923218328",
+                    "locale": ""
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -994,16 +1024,34 @@ The settlement details in case of Card payment method can be sent through Reques
                     "email": "john.smith@email.com"
                 },
                 "billingAddress": {
+                    "id": "12345",
+                    "status": "PAYABLE",
                     "nickName": "Home",
                     "street": "100 Queen",
                     "street2": "Unit 200",
                     "city": "Toronto",
                     "zip": "M5H 2N2",
                     "country": "CA",
-                    "state": "ON"
+                    "state": "ON",
+                    "phone": "345345435",
+                    "recipientName": ""
                 },
-                "paymentMethod": "SKRILL",
-                "type": "SINGLE_USE",
+                "paymentType": "SKRILL",
+                "usage": "SINGLE_USE",
+                "action": "REDIRECT",
+                "executionMode": "SYNCHRONOUS",
+                 "links": [
+                           {
+                            "href": "https://www.skrill.com",
+                            "rel": "self"
+                    }
+                  ],
+                 "currency": "USD",
+                 "returnUrl": "www.merchanturl.com",
+                 "descriptor": "dsfdsg",
+                 "creationDate": "12-23-1323",
+                 "expirationDate": "12-23-3446",
+                 "paymentHandleToken": "AJSASGA",
                 "skrill": {
                     "consumerId": "john.doe@email.com",
                     "recipientDescription":"logo_url_alt_text",
@@ -1166,11 +1214,11 @@ The settlement details in case of Card payment method can be sent through Reques
                     "minAgeRestriction": 18,
                     "kycLevelRestriction": "SIMPLE",
                     "countryRestriction": "DE"
+                },
+                "redirect": {
+                    "url": "redirect_url",
+                    "method": "GET"
                 }
-            },
-            "redirect" : {         
-                     "url" : "redirect_url",
-                     "method" : "GET"  
             }
             
 + Request PaysafeCash Payment Handle creation (application/json)
@@ -1349,8 +1397,9 @@ The settlement details in case of Card payment method can be sent through Reques
             {
                 "countryCode" : "CA",
                 "currency" : "CAD",
-                "accountId" : "12322122"
-            }
+                "apiKey" : "T1QtNjc0NDA6Qi1xYTItMC01ODRlZGJlNy0wLTMwMmMwMjE0NzYwMzlkZjViZmVhNTEwOTgxMzI0MjYxM2U2MzVlMDI4YjQwMGYxYTAyMTQ0NDcyZTJmMWNlZGM1NWVmNTlhODM3YjQ3YjU1NjhjMTljODllGhi2",
+                "amount" : "2000"
+            } 
 
 + Response 200 (application/json)
 
@@ -1392,11 +1441,6 @@ The settlement details in case of Card payment method can be sent through Reques
                   "name" : "Skrill",
                   "type" : "wallet",
                   "operationsSupported" : ["payment", "settlement", "refund"]
-                },
-                {
-                  "name" : "PaysafeCash",
-                  "type" : "apm",
-                  "operationsSupported" : ["payment", "settlement", ]
                 }
               ]
             }
