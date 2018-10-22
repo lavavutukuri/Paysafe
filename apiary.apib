@@ -85,6 +85,624 @@ The following payment methods are supported
 + descriptor: transaction for abcd
 + expiryTime: 2014-01-01T23:28:56Z - Expiry time of Payment handle varies between Payment channel
 
+# Group Payment Method APIs
+
+## Payment Method APIs [/v1/paymentMethods]
+
+### Get Payment Methods [POST]
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+                "countryCode" : "CA",
+                "currency" : "CAD",
+                "amount" : "2000"
+            } 
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "countryCode" : "CA",
+                "Currency" : "CAD",
+                "accountId" : "12322122",
+                "paymentMethods": [
+                {
+                  "name": "Card",
+                  "type": "scheme",
+                  "details": [
+                    {
+                      "key": "cardNumber",
+                      "type": "number"
+                    },
+                    {
+                      "key": "securityCode",
+                      "type": "number"
+                    },
+                    {
+                      "key": "encryptedExpiryMonth",
+                      "type": "number"
+                    },
+                    {
+                      "key": "encryptedExpiryYear",
+                      "type": "number"
+                    },
+                    {
+                      "key": "holderName",
+                      "optional": "true",
+                      "type": "text"
+                    }
+                  ]
+                },
+                {
+                  "name" : "Skrill",
+                  "type" : "wallet",
+                  "operationsSupported" : ["payment", "settlement", "refund"]
+                }
+              ]
+            }
+            
+
+# Group Payment Handle APIs
+
+
+## Payment Handle APIs [/v1/paymenthandles]
+
+### Create Payment Handle [POST]
+
++ Request CARD Payment Handle with 3DS enabled (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+              "amount": "100",
+              "merchantRefNum": "ORDER_ID:1231",
+              "paymentMethod": "CARD",
+              "type": "SINGLE_USE",
+              "currency": "CAD",
+              "customerIp": "172.0.0.1",
+              "merchantUrl": "https://www.example.com",
+              "customerId": "Gt56fR6",
+              "billingAddress": {
+                "addressId": "DF45FDtrR"
+              },
+              "card": {
+              "id" : "paymentInstrumentId1",
+                "holderName": "John Smith",
+                "cardNum": "4012001036853337",
+                "cardExpiry": {
+                  "month": "12",
+                  "year": "2020"
+                },
+                "cvv" : "123"
+              },
+              "three_d_secure": {
+                "userAgent": "",
+                "acceptedHeader": ""
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "ph_TGFVRedfghy875redfghnED",
+              "amount": "100",
+              "merchantRefNum": "merchantRef-1234",
+              "currency": "CAD",
+              "customerIp": "172.0.0.1",
+              "flow": "redirect",
+              "customer": {
+                "firstName": "John",
+                "lastName": "Smith",
+                "dateOfBirth": {
+                  "year": 1981,
+                  "month": 10,
+                  "day": 24
+                },
+                "email": "john.smith@email.com"
+              },
+              "billingAddress": {
+                "nickName": "Home",
+                "street": "100 Queen",
+                "street2": "Unit 200",
+                "city": "Toronto",
+                "zip": "M5H 2N2",
+                "country": "CA",
+                "state": "ON"
+              },
+              "paymentMethod": "CARD",
+              "type": "SINGLE_USE",
+              "card": {
+                "id" : "paymentInstrumentId1",
+                "holderName": "John Smith",
+                "lastDigits": "1111",
+                "cardExpiry": {
+                  "month": "12",
+                  "year": "2020"
+                }
+              },
+              "redirect": {
+                 "url" : "acsurl",
+                 "method" : "POST",
+                 "formParameters" : {
+                 "paReq" : "eJxVUttOwkAQ/RXCO91LS2nJsEmVqBgwRAlGX0izndgGe2G7pfD37kIr+jZn",
+                 "TermURL" : "https://api.paysafe.com/v1/paymenthandles/callback/card/3ds",
+                 "MD" : "identifier_to_idenity_currentSession"
+             },
+            "headers" : {
+                "Content-Type" : "application/x-www-form-urlencoded"
+             }
+            },
+            "three_d_secure": {
+                "enrollmentStatus": "Y"
+              }
+            }
+            
++ Request Card payment handle creation without 3DS (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+                "amount": "100",
+                "customer": {
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON"
+                },
+                "paymentMethod": "CARD",
+                "type": "SINGLE_USE",
+                "card": {
+                    "id" : "a02e52c7-c991-4418-966a-b62989cb0eae",
+                    "holderName": "John Smith",
+                    "cardNum": "4111 1111 1111 1111",
+                    "cardExpiry": {
+                        "month": "12",
+                        "year": "2020"
+                    },
+                  "cvv" : "123"   
+                },
+                "three_d_secure": {
+                  "userAgent": "",
+                  "acceptedHeader": ""
+                }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id": "ph_TGFVRedfghy875redfghnED",
+                "amount": "100",
+                "flow": "none",
+                "customer": {
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON"
+                },
+                "paymentMethod": "CARD",
+                "type": "SINGLE_USE",
+                "card": {
+                    "id" : "a02e52c7-c991-4418-966a-b62989cb0eae",
+                    "holderName": "John Smith",
+                    "cardNum": "1111",
+                    "cardExpiry": {
+                        "month": "12",
+                        "year": "2020"
+                    }
+                },
+              "three_d_secure": {
+                "userAgent": "",
+                "acceptedHeader": "",
+                "enrollmentStatus": "N"
+              }
+            }
+            
++ Request Skrill Payment Handle creation (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+                "merchantRefNum":"123sdfsdfsdf",
+                "amount": "100",
+                "storedCredential": {
+                     "type": "ADHOC",
+                     "occurance": "INITIAL"
+                },
+                "profile": {
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "middleName": "sdfsd",
+                    "phone": "3245678",
+                    "gender": "MALE",
+                    "nationality": "INDIAN",
+                    "cellPhone": "1923218328",
+                    "locale": ""
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON",
+                    "phone": "345345435",
+                    "recipientName": ""
+                },
+                "paymentType": "SKRILL",
+                "currency": "USD",
+                "returnUrl": "www.merchanturl.com",
+                "skrill": {
+                    "consumerId": "john.doe@email.com",
+                    "recipientDescription":"logo_url_alt_text",
+                    "language":"EN",
+                    "logoUrl":"http://www.paysafe.com/icon.jpg",
+                    "detail1Description":"Details 1 description",
+                    "detail1Text":"Details 1 text"
+                }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id": "ph_TGFVRedfghy875redfghnED",
+                "status": "PENDING",
+                "amount": "100",
+                "merchantRefNum": "12345",
+                "storedCredential": {
+                     "type": "ADHOC",
+                     "occurance": "INITIAL"
+                },
+                "profile": {
+                    "id": "12345",
+                    "status": "PAYABLE",
+                    "merchantCustomerId": "JSHDDS",
+                    "paymentToken": "HSAFDYSFD",
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "middleName": "sdfsd",
+                    "phone": "3245678",
+                    "gender": "MALE",
+                    "nationality": "INDIAN",
+                    "cellPhone": "1923218328",
+                    "locale": ""
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                    "id": "12345",
+                    "status": "PAYABLE",
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON",
+                    "phone": "345345435",
+                    "recipientName": ""
+                },
+                "paymentType": "SKRILL",
+                "usage": "SINGLE_USE",
+                "action": "REDIRECT",
+                "executionMode": "SYNCHRONOUS",
+                 "links": [
+                           {
+                            "href": "https://www.skrill.com",
+                            "rel": "self"
+                    }
+                  ],
+                 "currency": "USD",
+                 "returnUrl": "www.merchanturl.com",
+                 "descriptor": "dsfdsg",
+                 "creationDate": "12-23-1323",
+                 "expirationDate": "12-23-3446",
+                 "paymentHandleToken": "AJSASGA",
+                "skrill": {
+                    "consumerId": "john.doe@email.com",
+                    "recipientDescription":"logo_url_alt_text",
+                    "language":"EN",
+                    "logoUrl":"http://www.paysafe.com/icon.jpg",
+                    "detail1Description":"Details 1 description",
+                    "detail1Text":"Details 1 text"
+                }
+            }
+            
++ Request Neteller Payment Handle creation (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+                "amount": "148",
+                "customer": {
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON"
+                },
+                "paymentMethod": "NETELLER",
+                "type": "SINGLE_USE",
+                "neteller": {
+                    "consumerId":"neteller.account@example.org",
+                    "consumerVerificationId":"123456",
+                    "recipientDescription":"logo_url_alt_text",
+                    "language":"EN",
+                    "logoUrl":"http://www.paysafe.com/icon.jpg",
+                    "detail1Description":"Details 1 description",
+                    "detail1Text":"Details 1 text"
+                }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id": "ph_TGFVRedfghy875redfghnED",
+                "amount": "148",
+                "customer": {
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON"
+                },
+                "paymentMethod": "SKRILL",
+                "type": "SINGLE_USE",
+                "neteller": {
+                    "consumerId":"neteller.account@example.org",
+                    "consumerVerificationId":"123456",
+                    "recipientDescription":"logo_url_alt_text",
+                    "language":"EN",
+                    "logoUrl":"http://www.paysafe.com/icon.jpg",
+                    "detail1Description":"Details 1 description",
+                    "detail1Text":"Details 1 text"
+                }
+            }
++ Request PaysafeCard Payment Handle creation (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+                "amount": "148",
+                "customer": {
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON"
+                },
+                "paymentMethod": "PAYSAFE_CARD",
+                "type": "SINGLE_USE",
+                "paysafecard": {
+                    "consumerId": "merchantclientid",
+                    "minAgeRestriction": 18,
+                    "kycLevelRestriction": "SIMPLE",
+                    "countryRestriction": "DE"
+                    }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id": "ph_TGFVRedfghy875redfghnED",
+                "amount": "148",
+                "customer": {
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON"
+                },
+                "paymentMethod": "PAYSAFE_CARD",
+                "type": "SINGLE_USE",
+                "paysafecard": {
+                    "consumerId": "merchantclientid",
+                    "minAgeRestriction": 18,
+                    "kycLevelRestriction": "SIMPLE",
+                    "countryRestriction": "DE"
+                },
+                "redirect": {
+                    "url": "redirect_url",
+                    "method": "GET"
+                }
+            }
+            
++ Request PaysafeCash Payment Handle creation (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+                "amount": "148",
+                "customer": {
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON"
+                },
+                "paymentMethod": "PAYSAFE_CASH",
+                "type": "SINGLE_USE",
+                "paysafecash": {
+                    "consumerId": "merchantclientid",
+                    "minAgeRestriction": 18,
+                    "kycLevelRestriction": "SIMPLE",
+                    "countryRestriction": "DE"
+                    }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id": "ph_TGFVRedfghy875redfghnED",
+                "amount": "148",
+                "customer": {
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON"
+                },
+                "paymentMethod": "PAYSAFE_CASH",
+                "type": "SINGLE_USE",
+               "paysafecash": {
+                    "consumerId": "merchantclientid",
+                    "minAgeRestriction": 18,
+                    "kycLevelRestriction": "SIMPLE",
+                    "countryRestriction": "DE"
+                }
+            }
 
 # Group Payment APIs
 
@@ -742,559 +1360,7 @@ The settlement details in case of Card payment method can be sent through Reques
             }
             
             
-# Group Payment Handle APIs
 
-
-## Payment Handle APIs [/v1/paymenthandles]
-
-### Create Payment Handle [POST]
-
-+ Request CARD Payment Handle with 3DS enabled (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-              "amount": "100",
-              "merchantRefNum": "ORDER_ID:1231",
-              "paymentMethod": "CARD",
-              "type": "SINGLE_USE",
-              "currency": "CAD",
-              "customerIp": "172.0.0.1",
-              "merchantUrl": "https://www.example.com",
-              "customerId": "Gt56fR6",
-              "billingAddress": {
-                "addressId": "DF45FDtrR"
-              },
-              "card": {
-              "id" : "paymentInstrumentId1",
-                "holderName": "John Smith",
-                "cardNum": "4012001036853337",
-                "cardExpiry": {
-                  "month": "12",
-                  "year": "2020"
-                },
-                "cvv" : "123"
-              },
-              "three_d_secure": {
-                "userAgent": "",
-                "acceptedHeader": ""
-              }
-            }
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-              "id": "ph_TGFVRedfghy875redfghnED",
-              "amount": "100",
-              "merchantRefNum": "merchantRef-1234",
-              "currency": "CAD",
-              "customerIp": "172.0.0.1",
-              "flow": "redirect",
-              "customer": {
-                "firstName": "John",
-                "lastName": "Smith",
-                "dateOfBirth": {
-                  "year": 1981,
-                  "month": 10,
-                  "day": 24
-                },
-                "email": "john.smith@email.com"
-              },
-              "billingAddress": {
-                "nickName": "Home",
-                "street": "100 Queen",
-                "street2": "Unit 200",
-                "city": "Toronto",
-                "zip": "M5H 2N2",
-                "country": "CA",
-                "state": "ON"
-              },
-              "paymentMethod": "CARD",
-              "type": "SINGLE_USE",
-              "card": {
-                "id" : "paymentInstrumentId1",
-                "holderName": "John Smith",
-                "lastDigits": "1111",
-                "cardExpiry": {
-                  "month": "12",
-                  "year": "2020"
-                }
-              },
-              "redirect": {
-                 "url" : "acsurl",
-                 "method" : "POST",
-                 "formParameters" : {
-                 "paReq" : "eJxVUttOwkAQ/RXCO91LS2nJsEmVqBgwRAlGX0izndgGe2G7pfD37kIr+jZn",
-                 "TermURL" : "https://api.paysafe.com/v1/paymenthandles/callback/card/3ds",
-                 "MD" : "identifier_to_idenity_currentSession"
-             },
-            "headers" : {
-                "Content-Type" : "application/x-www-form-urlencoded"
-             }
-            },
-            "three_d_secure": {
-                "enrollmentStatus": "Y"
-              }
-            }
-            
-+ Request Card payment handle creation without 3DS (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-                "amount": "100",
-                "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
-                },
-                "paymentMethod": "CARD",
-                "type": "SINGLE_USE",
-                "card": {
-                    "id" : "a02e52c7-c991-4418-966a-b62989cb0eae",
-                    "holderName": "John Smith",
-                    "cardNum": "4111 1111 1111 1111",
-                    "cardExpiry": {
-                        "month": "12",
-                        "year": "2020"
-                    },
-                  "cvv" : "123"   
-                },
-                "three_d_secure": {
-                  "userAgent": "",
-                  "acceptedHeader": ""
-                }
-            }
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-                "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "100",
-                "flow": "none",
-                "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
-                },
-                "paymentMethod": "CARD",
-                "type": "SINGLE_USE",
-                "card": {
-                    "id" : "a02e52c7-c991-4418-966a-b62989cb0eae",
-                    "holderName": "John Smith",
-                    "cardNum": "1111",
-                    "cardExpiry": {
-                        "month": "12",
-                        "year": "2020"
-                    }
-                },
-              "three_d_secure": {
-                "userAgent": "",
-                "acceptedHeader": "",
-                "enrollmentStatus": "N"
-              }
-            }
-            
-+ Request Skrill Payment Handle creation (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-                "merchantRefNum":"123sdfsdfsdf",
-                "amount": "100",
-                "storedCredential": {
-                     "type": "ADHOC",
-                     "occurance": "INITIAL"
-                },
-                "profile": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "middleName": "sdfsd",
-                    "phone": "3245678",
-                    "gender": "MALE",
-                    "nationality": "INDIAN",
-                    "cellPhone": "1923218328",
-                    "locale": ""
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON",
-                    "phone": "345345435",
-                    "recipientName": ""
-                },
-                "paymentType": "SKRILL",
-                "currency": "USD",
-                "returnUrl": "www.merchanturl.com",
-                "skrill": {
-                    "consumerId": "john.doe@email.com",
-                    "recipientDescription":"logo_url_alt_text",
-                    "language":"EN",
-                    "logoUrl":"http://www.paysafe.com/icon.jpg",
-                    "detail1Description":"Details 1 description",
-                    "detail1Text":"Details 1 text"
-                }
-            }
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-                "id": "ph_TGFVRedfghy875redfghnED",
-                "status": "PENDING",
-                "amount": "100",
-                "merchantRefNum": "12345",
-                "storedCredential": {
-                     "type": "ADHOC",
-                     "occurance": "INITIAL"
-                },
-                "profile": {
-                    "id": "12345",
-                    "status": "PAYABLE",
-                    "merchantCustomerId": "JSHDDS",
-                    "paymentToken": "HSAFDYSFD",
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "middleName": "sdfsd",
-                    "phone": "3245678",
-                    "gender": "MALE",
-                    "nationality": "INDIAN",
-                    "cellPhone": "1923218328",
-                    "locale": ""
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                    "id": "12345",
-                    "status": "PAYABLE",
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON",
-                    "phone": "345345435",
-                    "recipientName": ""
-                },
-                "paymentType": "SKRILL",
-                "usage": "SINGLE_USE",
-                "action": "REDIRECT",
-                "executionMode": "SYNCHRONOUS",
-                 "links": [
-                           {
-                            "href": "https://www.skrill.com",
-                            "rel": "self"
-                    }
-                  ],
-                 "currency": "USD",
-                 "returnUrl": "www.merchanturl.com",
-                 "descriptor": "dsfdsg",
-                 "creationDate": "12-23-1323",
-                 "expirationDate": "12-23-3446",
-                 "paymentHandleToken": "AJSASGA",
-                "skrill": {
-                    "consumerId": "john.doe@email.com",
-                    "recipientDescription":"logo_url_alt_text",
-                    "language":"EN",
-                    "logoUrl":"http://www.paysafe.com/icon.jpg",
-                    "detail1Description":"Details 1 description",
-                    "detail1Text":"Details 1 text"
-                }
-            }
-            
-+ Request Neteller Payment Handle creation (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-                "amount": "148",
-                "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
-                },
-                "paymentMethod": "NETELLER",
-                "type": "SINGLE_USE",
-                "neteller": {
-                    "consumerId":"neteller.account@example.org",
-                    "consumerVerificationId":"123456",
-                    "recipientDescription":"logo_url_alt_text",
-                    "language":"EN",
-                    "logoUrl":"http://www.paysafe.com/icon.jpg",
-                    "detail1Description":"Details 1 description",
-                    "detail1Text":"Details 1 text"
-                }
-            }
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-                "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "148",
-                "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
-                },
-                "paymentMethod": "SKRILL",
-                "type": "SINGLE_USE",
-                "neteller": {
-                    "consumerId":"neteller.account@example.org",
-                    "consumerVerificationId":"123456",
-                    "recipientDescription":"logo_url_alt_text",
-                    "language":"EN",
-                    "logoUrl":"http://www.paysafe.com/icon.jpg",
-                    "detail1Description":"Details 1 description",
-                    "detail1Text":"Details 1 text"
-                }
-            }
-+ Request PaysafeCard Payment Handle creation (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-                "amount": "148",
-                "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
-                },
-                "paymentMethod": "PAYSAFE_CARD",
-                "type": "SINGLE_USE",
-                "paysafecard": {
-                    "consumerId": "merchantclientid",
-                    "minAgeRestriction": 18,
-                    "kycLevelRestriction": "SIMPLE",
-                    "countryRestriction": "DE"
-                    }
-            }
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-                "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "148",
-                "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
-                },
-                "paymentMethod": "PAYSAFE_CARD",
-                "type": "SINGLE_USE",
-                "paysafecard": {
-                    "consumerId": "merchantclientid",
-                    "minAgeRestriction": 18,
-                    "kycLevelRestriction": "SIMPLE",
-                    "countryRestriction": "DE"
-                },
-                "redirect": {
-                    "url": "redirect_url",
-                    "method": "GET"
-                }
-            }
-            
-+ Request PaysafeCash Payment Handle creation (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-                "amount": "148",
-                "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
-                },
-                "paymentMethod": "PAYSAFE_CASH",
-                "type": "SINGLE_USE",
-                "paysafecash": {
-                    "consumerId": "merchantclientid",
-                    "minAgeRestriction": 18,
-                    "kycLevelRestriction": "SIMPLE",
-                    "countryRestriction": "DE"
-                    }
-            }
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-                "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "148",
-                "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
-                },
-                "paymentMethod": "PAYSAFE_CASH",
-                "type": "SINGLE_USE",
-               "paysafecash": {
-                    "consumerId": "merchantclientid",
-                    "minAgeRestriction": 18,
-                    "kycLevelRestriction": "SIMPLE",
-                    "countryRestriction": "DE"
-                }
-            }
 # Group Customer APIs
 
 ## Create Profile [/v1/customers]
@@ -1377,69 +1443,4 @@ The settlement details in case of Card payment method can be sent through Reques
 
             {
             
-            }
-
-
-# Group MetaData APIs
-
-## MetaData APIs [/v1/paymentMethods]
-
-### List Payment Methods [POST]
-
-+ Request (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-                "countryCode" : "CA",
-                "currency" : "CAD",
-                "amount" : "2000"
-            } 
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-                "countryCode" : "CA",
-                "Currency" : "CAD",
-                "accountId" : "12322122",
-                "paymentMethods": [
-                {
-                  "name": "Card",
-                  "type": "scheme",
-                  "details": [
-                    {
-                      "key": "cardNumber",
-                      "type": "number"
-                    },
-                    {
-                      "key": "securityCode",
-                      "type": "number"
-                    },
-                    {
-                      "key": "encryptedExpiryMonth",
-                      "type": "number"
-                    },
-                    {
-                      "key": "encryptedExpiryYear",
-                      "type": "number"
-                    },
-                    {
-                      "key": "holderName",
-                      "optional": "true",
-                      "type": "text"
-                    }
-                  ]
-                },
-                {
-                  "name" : "Skrill",
-                  "type" : "wallet",
-                  "operationsSupported" : ["payment", "settlement", "refund"]
-                }
-              ]
             }
