@@ -3,6 +3,8 @@ HOST: https://api.test.paysafe.com/
 
 # Payment Hub 
 
+## Getting Started
+
 Paysafe Payment Hub encapsulates integration with multiple payment methods into a single API 
 that simplifies the development effort for a new payment method integration to bare minimum 
 or even none in certain cases.
@@ -87,9 +89,9 @@ The following payment methods are supported
 
 # Group Payment Method APIs
 
-## Payment Method APIs [/v1/paymentMethods]
+## Fetch Available Payment Methods [/v1/paymentMethods]
 
-### Get Payment Methods [POST]
+### Payment Methods [POST]
 
 + Request (application/json)
 
@@ -102,7 +104,8 @@ The following payment methods are supported
             {
                 "countryCode" : "CA",
                 "currency" : "CAD",
-                "amount" : "2000"
+                "amount" : "2000",
+                "accountId": "123456789"
             } 
 
 + Response 200 (application/json)
@@ -112,7 +115,7 @@ The following payment methods are supported
             {
                 "countryCode" : "CA",
                 "Currency" : "CAD",
-                "accountId" : "12322122",
+                "accountId": "123456789",
                 "paymentMethods": [
                 {
                   "name": "Card",
@@ -153,7 +156,9 @@ The following payment methods are supported
 # Group Payment Handle APIs
 
 
-## Payment Handle APIs [/v1/paymenthandles]
+## Payment Handles [/v1/paymenthandles]
+
+The payment handle allows an integrator to accept a variety of payment methods through a single API.
 
 ### Create Payment Handle [POST]
 
@@ -169,6 +174,7 @@ The following payment methods are supported
               "amount": "100",
               "merchantRefNum": "ORDER_ID:1231",
               "paymentMethod": "CARD",
+              "accountId": "123456789",
               "type": "SINGLE_USE",
               "currency": "CAD",
               "customerIp": "172.0.0.1",
@@ -203,6 +209,7 @@ The following payment methods are supported
               "merchantRefNum": "merchantRef-1234",
               "currency": "CAD",
               "customerIp": "172.0.0.1",
+              "accountId": "123456789",
               "flow": "redirect",
               "customer": {
                 "firstName": "John",
@@ -261,6 +268,7 @@ The following payment methods are supported
 
             {
                 "amount": "100",
+                "accountId": "123456789",
                 "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
@@ -305,6 +313,7 @@ The following payment methods are supported
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
                 "amount": "100",
+                "accountId": "123456789",
                 "flow": "none",
                 "customer": {
                     "firstName": "John",
@@ -354,6 +363,7 @@ The following payment methods are supported
             {
                 "merchantRefNum":"123sdfsdfsdf",
                 "amount": "100",
+                "accountId": "123456789",
                 "storedCredential": {
                      "type": "ADHOC",
                      "occurance": "INITIAL"
@@ -405,6 +415,7 @@ The following payment methods are supported
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
                 "status": "PENDING",
+                "accountId": "123456789",
                 "amount": "100",
                 "merchantRefNum": "12345",
                 "storedCredential": {
@@ -480,6 +491,7 @@ The following payment methods are supported
 
             {
                 "amount": "148",
+                "accountId": "123456789",
                 "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
@@ -519,6 +531,7 @@ The following payment methods are supported
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
                 "amount": "148",
+                "accountId": "123456789",
                 "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
@@ -560,6 +573,7 @@ The following payment methods are supported
 
             {
                 "amount": "148",
+                "accountId": "123456789",
                 "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
@@ -596,6 +610,7 @@ The following payment methods are supported
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
                 "amount": "148",
+                "accountId": "123456789",
                 "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
@@ -639,6 +654,7 @@ The following payment methods are supported
 
             {
                 "amount": "148",
+                "accountId": "123456789",
                 "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
@@ -675,6 +691,7 @@ The following payment methods are supported
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
                 "amount": "148",
+                "accountId": "123456789",
                 "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
@@ -703,15 +720,126 @@ The following payment methods are supported
                     "countryRestriction": "DE"
                 }
             }
+            
+### Fetch Payment Handle [GET /v1/paymenthandles/f343d2bd-f6a6-4a6d-9534-96c0abd97649]
+
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id": "f343d2bd-f6a6-4a6d-9534-96c0abd97649",
+                "masterMerchantId": "234",
+                "merchantRefNum": "13995817730005399",
+                "status": "INITIATED",
+                "usage": "SINGLE_USE",
+                "paymentType": "CARD",
+                "action": "REDIRECT",
+                "executionMode": "SYNCHRONOUS",
+                "amount": 1000,
+                "currencyCode": "USD",
+                "links": [
+                    {
+                    "type": "REDIRECT",
+                    "url": "http://test.paysafe.com",
+                    "method": "POST"
+                },
+                {
+                "type": "RETURN_SUCCESS",
+                "url": "http://merchant.com/success",
+                 "method": "POST"
+            },
+            {
+                "type": "RETURN_FAILURE",
+                "url": "http://merchant.com/failure",
+                "method": "POST"
+             }
+            ],
+                "customerIp": "10.10.12.64",
+                "savePaymentInstrument": false,
+                "merchantDescriptor": {
+                "dynamicDescriptor": "Casino slots payin"
+             },
+                "fmaId": "card-processor-usd-003",
+                 "paymentHandleToken": "SCC54RTfi7x5sgjV",
+                "creationDate": 1540199745029,
+                "billingAddress": {
+                    "street": "Wall Street",
+                    "street2": "NYSE",
+                    "city": "New York",
+                    "state": "NY",
+                    "country": "US",
+                    "zip": "12345"
+            },
+                "card": {
+                    "paymentToken": "SCC54RTfi7x5sgjV"
+                }
+            }
+
+### Fetch Payment Handle by Merchant Reference Number [GET /v1/paymenthandles?merchantRefNum=13995817730005389&masterMerchantId=234]
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "id": "f343d2bd-f6a6-4a6d-9534-96c0abd97649",
+                "masterMerchantId": "234",
+                "merchantRefNum": "13995817730005399",
+                "status": "INITIATED",
+                "usage": "SINGLE_USE",
+                "paymentType": "CARD",
+                "action": "REDIRECT",
+                "executionMode": "SYNCHRONOUS",
+                "amount": 1000,
+                "currencyCode": "USD",
+                "links": [
+                    {
+                    "type": "REDIRECT",
+                    "url": "http://test.paysafe.com",
+                    "method": "POST"
+                },
+                {
+                "type": "RETURN_SUCCESS",
+                "url": "http://merchant.com/success",
+                 "method": "POST"
+            },
+            {
+                "type": "RETURN_FAILURE",
+                "url": "http://merchant.com/failure",
+                "method": "POST"
+             }
+            ],
+                "customerIp": "10.10.12.64",
+                "savePaymentInstrument": false,
+                "merchantDescriptor": {
+                "dynamicDescriptor": "Casino slots payin"
+             },
+                "fmaId": "card-processor-usd-003",
+                 "paymentHandleToken": "SCC54RTfi7x5sgjV",
+                "creationDate": 1540199745029,
+                "billingAddress": {
+                    "street": "Wall Street",
+                    "street2": "NYSE",
+                    "city": "New York",
+                    "state": "NY",
+                    "country": "US",
+                    "zip": "12345"
+            },
+                "card": {
+                    "paymentToken": "SCC54RTfi7x5sgjV"
+                }
+            }
 
 # Group Payment APIs
 
-## Make Payment [/v1/payments]
+## Payments [/v1/payments]
 
 Payment API is used to mark the submission of a payment from the customer side. For credit and debit cards, it is equivalent to an authorization while in case of digital wallet transactions, it is used to mark successful transfer of money.
 
 
-### Create Payment with Payment handle Id [POST]
+### Create Payment with handle Id [POST]
 
 + Attributes (PaymentHandleRequest)
 
@@ -729,11 +857,12 @@ Payment API is used to mark the submission of a payment from the customer side. 
             {
               "merchantRefNum": "merchant tokenization example-789",
               "amount": 1295,
+              "dupCheck": false,
               "settleWithAuth": false,
               "partialAuth": {
                 "requested": false
               },
-              "paymentHandleId": "LTEyMzYzMjQ3ODg",
+              "paymentHandleId": "ph_TGFVRedfghy875redfghnED",
               "customerIp": "204.91.0.12",
               "description": "Magazine subscription"
             }
@@ -747,35 +876,53 @@ Payment API is used to mark the submission of a payment from the customer side. 
               "merchantRefNum": "merchant tokenization example-789",
               "amount": 1295,
               "settleWithAuth": false,
+              "dupCheck": false,
               "partialAuth": {
                 "requested": false
               },
               "availableToSettle": 1295,
-              "card": {
-                "type": "VI",
-                "lastDigits": "9678",
-                "cardExpiry": {
-                  "month": 7,
-                  "year": 2020
-                }
-              },
-              "customerIp": "204.91.0.12",
               "description": "Magazine subscription",
               "authCode": "1234567655",
-              "profile": {
-                "firstName": "Joe",
-                "lastName": "Smith",
-                "email": "Joe.Smith@canada.com"
-              },
-              "billingAddress": {
-                "street": "100 Queen Street West",
-                "city": "Toronto",
-                "state": "ON",
-                "country": "CA",
-                "zip": "M5H 2N2"
+              "paymentHandle": {
+                "id": "ph_TGFVRedfghy875redfghnED",
+                "amount": "1295",
+                "merchantRefNum": "merchant tokenization example-789",
+                "currency": "CAD",
+                "customerIp": "204.91.0.12",
+                "flow": "redirect",
+                "customer": {
+                  "firstName": "John",
+                  "lastName": "Smith",
+                  "dateOfBirth": {
+                    "year": 1981,
+                    "month": 10,
+                    "day": 24
+                  },
+                  "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                  "nickName": "Home",
+                  "street": "100 Queen",
+                  "street2": "Unit 200",
+                  "city": "Toronto",
+                  "zip": "M5H 2N2",
+                  "country": "CA",
+                  "state": "ON"
+                },
+                "paymentMethod": "CARD",
+                "type": "SINGLE_USE",
+                "card": {
+                  "id": "paymentInstrumentId1",
+                  "holderName": "John Smith",
+                  "lastDigits": "1111",
+                  "cardExpiry": {
+                    "month": "12",
+                    "year": "2020"
+                  }
+                }
               },
               "txnTime": "2014-12-14T15:12:18Z",
-              "currencyCode": "USD",
+              "currencyCode": "CAD",
               "avsResponse": "MATCH",
               "cvvVerification": "NOT_PROCESSED",
               "status": "COMPLETED"
@@ -928,10 +1075,75 @@ Payment API is used to mark the submission of a payment from the customer side. 
               "status": "PENDING"
             }
             
-## Post settlement [/v1/auths/{auth_id}/settlements]
+            
+### Get Payments [GET]
 
-1. Settlement with dupCheck and merchentRefNum
-2. partial Settlement with amount in Request Body 
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "14d380a4-e934-4cc8-b49e-a90cc082faa0",
+              "merchantRefNum": "merchant tokenization example-789",
+              "amount": 1295,
+              "settleWithAuth": false,
+              "dupCheck": false,
+              "partialAuth": {
+                "requested": false
+              },
+              "availableToSettle": 1295,
+              "description": "Magazine subscription",
+              "authCode": "1234567655",
+              "paymentHandle": {
+                "id": "ph_TGFVRedfghy875redfghnED",
+                "amount": "1295",
+                "merchantRefNum": "merchant tokenization example-789",
+                "currency": "CAD",
+                "customerIp": "204.91.0.12",
+                "flow": "redirect",
+                "customer": {
+                  "firstName": "John",
+                  "lastName": "Smith",
+                  "dateOfBirth": {
+                    "year": 1981,
+                    "month": 10,
+                    "day": 24
+                  },
+                  "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                  "nickName": "Home",
+                  "street": "100 Queen",
+                  "street2": "Unit 200",
+                  "city": "Toronto",
+                  "zip": "M5H 2N2",
+                  "country": "CA",
+                  "state": "ON"
+                },
+                "paymentMethod": "CARD",
+                "type": "SINGLE_USE",
+                "card": {
+                  "id": "paymentInstrumentId1",
+                  "holderName": "John Smith",
+                  "lastDigits": "1111",
+                  "cardExpiry": {
+                    "month": "12",
+                    "year": "2020"
+                  }
+                }
+              },
+              "txnTime": "2014-12-14T15:12:18Z",
+              "currencyCode": "CAD",
+              "avsResponse": "MATCH",
+              "cvvVerification": "NOT_PROCESSED",
+              "status": "COMPLETED"
+            }
+            
+# Group Settlement APIs
+
+## Settlements [/v1/auths/{auth_id}/settlements]
+
+Settlement with dupCheck and merchentRefNum
 
 + Parameter
 
@@ -939,6 +1151,9 @@ Payment API is used to mark the submission of a payment from the customer side. 
 
 ### Post Settlement [POST]
 
+1) A regular Settlement, where the initial request was an Authorization that now has to be settled
+2) A partial Settlement, where only part of the initial Authorization is settled, leaving the balance to be settled later
+3) A Settlement that is split into multiple merchant accounts, for merchant accounts that are configured to do so
 
 + Request (application/json)
 
@@ -1008,16 +1223,14 @@ Payment API is used to mark the submission of a payment from the customer side. 
               ]
             }
             
-## Cancel settlement [/v1/settlement/{settlement_id}]
+### Cancel a Settlement [PUT /v1/settlement/{settlement_id}]
 
-1. Settlement with dupCHeck and merchentRefNum
+1. Settlement with dupCheck and merchentRefNum
 2. partial Settlement with amount in Request Body 
 
 + Parameter
 
     + settlement_id (String) - Qwdqdasdansdbasdtftoiqwo
-
-### Cancel Settlement [PUT]
 
 + Request (application/json)
 
@@ -1047,7 +1260,9 @@ Payment API is used to mark the submission of a payment from the customer side. 
               ]
             }
 
-## Initiate Refund [/v1/payments/{payments_id}/refunds]
+# Group Refund APIs
+
+## Refunds [/v1/payments/{payments_id}/refunds]
 
 The settlement details in case of Card payment method can be sent through Request Body
 
@@ -1056,6 +1271,9 @@ The settlement details in case of Card payment method can be sent through Reques
     + payments_id (String) - Qwdqdasdansdbasdtftoiqwo
 
 ### Post Refund [POST]
+
+A regular Refund
+2) A Refund that is split into multiple merchant accounts, for merchant accounts that are configured to do so
 
 + Request (application/json)
 
@@ -1090,8 +1308,14 @@ The settlement details in case of Card payment method can be sent through Reques
               ]
             }
             
-### Cancel Refund [PUT]
+### Cancel Refund [PUT /v1/refunds/{refund_id}]
 
+Click on Cancel a Refund above to see how to submit a Cancel Refund request.
+
++ Parameter
+
+    + refund_id (String) - Qwdqdasdansdbasdtftoiqwo
+    
 + Request (application/json)
 
     + Headers
@@ -1147,12 +1371,17 @@ The settlement details in case of Card payment method can be sent through Reques
               ]
             }
          
-## Initiate Standalone/Original Credit [/v1/standalonecredits]
+# Group Standalone Credits APIs
+
+## Standalone Credits [/v1/standalonecredits]
+
+Standalone Credits allow merchants to issue credits to cardholders without requiring a previous Authorization/Settlement.
+
+### Post Standalone Credit [POST]
 
 1. Credit with original Card information
 2. Credit with Payment Token
 
-### Post Standalone Credit [POST]
 
 + Request (application/json)
 
@@ -1163,7 +1392,7 @@ The settlement details in case of Card payment method can be sent through Reques
     + Body
 
             {
-              "merchantRefNum": "merchant 07.05.17_16",
+              "merchantRefNum": "13995817730005399",
               "amount": 1000,
               "dupCheck": "true",
               "card": {
@@ -1174,7 +1403,8 @@ The settlement details in case of Card payment method can be sent through Reques
                 }
               },
               "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto"
+              "description": "Winning payment from Loto",
+              "accountId": "123456789"
             }         
 + Response 200 (application/json)
 
@@ -1182,7 +1412,7 @@ The settlement details in case of Card payment method can be sent through Reques
 
             {
               "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-              "merchantRefNum": "merchant 07.05.17_16",
+              "merchantRefNum": "13995817730005399",
               "txnTime": "2017-07-06T19:59:17Z",
               "status": "PENDING",
               "amount": 1000,
@@ -1209,10 +1439,11 @@ The settlement details in case of Card payment method can be sent through Reques
               "customerIp": "204.91.0.12",
               "description": "Winning payment from Loto",
               "currencyCode": "CAD",
+              "accountId": "123456789",
               "links": [
                 {
                   "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/accounts/1001058570/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                  "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
                 }
               ]
             }
@@ -1233,7 +1464,8 @@ The settlement details in case of Card payment method can be sent through Reques
                 "paymentToken": "LTEyMzYzMjQ3ODg"
               },
               "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto"
+              "description": "Winning payment from Loto",
+              "accountId": "123456789"
             }  
             
 + Response 200 (application/json)
@@ -1269,23 +1501,23 @@ The settlement details in case of Card payment method can be sent through Reques
               "customerIp": "204.91.0.12",
               "description": "Winning payment from Loto",
               "currencyCode": "CAD",
+              "accountId": "123456789",
               "links": [
                 {
                   "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/accounts/1001058570/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                  "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
                 }
               ]
             }
             
-## Cancel Standalone/Original Credit [/v1/standalonecredits/{standalone_credit_id}]
+### Cancel Standalone Credit [PUT /v1/standalonecredits/{standalone_credit_id}]
+
+Click on Cancel a Standalone Credit above to see how to submit a Cancel Standalone Credit request.
 
 + Parameter
 
-    + standalone_credit_id (String) - Qwdqdasdansdbasdtftoiqwo
+    + standalone_credit_id (String) - 86dcb68d-cbd0-4878-8da7-ffc0e6554513
     
-    
-
-### Cancel Standalone/Original Credit [PUT]
 
 + Request (application/json)
 
@@ -1311,12 +1543,15 @@ The settlement details in case of Card payment method can be sent through Reques
               "links": [
                 {
                   "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/accounts/123456789/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                  "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
                 }
               ]
             }
             
-### Get Standalone/Original Credit [GET]
+
+### Get Standalone Credit [GET]
+
+Click on Get Standalone Credit above to see how to look up a Standalone Credit request using the ID returned in the response to the original request.
 
 + Response 200 (application/json)
 
@@ -1351,15 +1586,352 @@ The settlement details in case of Card payment method can be sent through Reques
               "customerIp": "204.91.0.12",
               "description": "Winning payment from Loto",
               "currencyCode": "CAD",
+              "accountId": "123456789",
               "links": [
                 {
                   "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/accounts/1001058570/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                  "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
                 }
               ]
             }
             
+### Get Standalone Credit Using Merchant Reference Number  [GET /v1/standalonecredits?merchantRefNum=13995817730005399]
+
+Click on Get Standalone Credit Using Merchant Reference Number above to see how to look up a Standalone Credit using the merchant reference number used in the original request.
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+               "standalonecredits": [
+                {
+                    "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
+                    "merchantRefNum": "13995817730005399",
+                    "txnTime": "2017-07-06T19:59:17Z",
+                    "status": "PENDING",
+                    "amount": 1000,
+                    "card": {
+                        "type": "VI",
+                        "lastDigits": "1111",
+                        "cardExpiry": {
+                        "month": 2,
+                        "year": 2019
+                    }
+                },
+                "profile": {
+                    "firstName": "Joe",
+                    "lastName": "Smith",
+                    "email": "Joe.Smith@canada.com"
+                },
+                "billingDetails": {
+                    "street": "100 Queen Street West",
+                    "city": "Toronto",
+                    "state": "ON",
+                    "country": "CA",
+                    "zip": "M5H2N2"
+                },
+                "customerIp": "204.91.0.12",
+                "description": "Winning payment from Loto",
+                "currencyCode": "CAD",
+                "accountId": "123456789",
+                "links": [
+                   {
+                    "rel": "self",
+                    "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                }
+                ]
+                 }
+                ],
+                "links": [
+                 {
+                    "rel": "self",
+                    "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits?merchantRefNum=merchant 07.05.17_16&limit=2&offset=2&startDate=2017-01-14T15:12:18Z&endDate=2017-04-04T15:12:18Z"
+                }
+            ]
+            }
             
+
+
+# Group Original Credits APIs
+
+## Original Credits [/v1/originalcredits]
+
+Original Credits allow merchants with specific merchant category codes (MCCs) to issue winnings as credits to cardholders, without requiring a previous Authorization/Settlement.
+
+### Original Credit [POST]
+
+1. An Original Credit request using card information.
+2. An Original Credit request using a payment token.
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+              "merchantRefNum": "13995817730005399",
+              "amount": 1000,
+              "dupCheck": "true",
+              "card": {
+                "cardNum": "4111111111111111",
+                "cardExpiry": {
+                  "month": 2,
+                  "year": 2019
+                }
+              },
+              "customerIp": "204.91.0.12",
+              "description": "Winning payment from Loto",
+              "accountId": "123456789"
+            }         
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
+              "merchantRefNum": "13995817730005399",
+              "txnTime": "2017-07-06T19:59:17Z",
+              "status": "PENDING",
+              "amount": 1000,
+              "card": {
+                "type": "VI",
+                "lastDigits": "1111",
+                "cardExpiry": {
+                  "month": 2,
+                  "year": 2019
+                }
+              },
+              "profile": {
+                "firstName": "Joe",
+                "lastName": "Smith",
+                "email": "Joe.Smith@canada.com"
+              },
+              "billingDetails": {
+                "street": "100 Queen Street West",
+                "city": "Toronto",
+                "state": "ON",
+                "country": "CA",
+                "zip": "M5H2N2"
+              },
+              "customerIp": "204.91.0.12",
+              "description": "Winning payment from Loto",
+              "currencyCode": "CAD",
+              "accountId": "123456789",
+              "links": [
+                {
+                  "rel": "self",
+                  "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                }
+              ]
+            }
+            
++ Request (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+              "merchantRefNum": "merchant 07.05.17_16",
+              "amount": 1000,
+              "dupCheck": "true",
+              "card": {
+                "paymentToken": "LTEyMzYzMjQ3ODg"
+              },
+              "customerIp": "204.91.0.12",
+              "description": "Winning payment from Loto",
+              "accountId": "123456789"
+            }  
+            
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
+              "merchantRefNum": "merchant 07.05.17_16",
+              "txnTime": "2017-07-06T19:59:17Z",
+              "status": "PENDING",
+              "amount": 1000,
+              "card": {
+                "type": "VI",
+                "lastDigits": "1111",
+                "cardExpiry": {
+                  "month": 2,
+                  "year": 2019
+                }
+              },
+              "profile": {
+                "firstName": "Joe",
+                "lastName": "Smith",
+                "email": "Joe.Smith@canada.com"
+              },
+              "billingDetails": {
+                "street": "100 Queen Street West",
+                "city": "Toronto",
+                "state": "ON",
+                "country": "CA",
+                "zip": "M5H2N2"
+              },
+              "customerIp": "204.91.0.12",
+              "description": "Winning payment from Loto",
+              "currencyCode": "CAD",
+              "accountId": "123456789",
+              "links": [
+                {
+                  "rel": "self",
+                  "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                }
+              ]
+            }
+
+
+
+### Cancel an Original Credit [PUT /v1/originalcredits/{original_credit_id}]
+
+Click on Cancel an Original Credit above to see how to submit a Cancel Original Credit request.
+
++ Parameter
+
+   + original_credit_id (String) - 86dcb68d-cbd0-4878-8da7-ffc0e6554513
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+              "status": "CANCELLED"
+            }
+
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
+              "txnTime": "2017-02-14T15:12:18Z",
+              "status": "CANCELLED",
+              "links": [
+                {
+                  "rel": "self",
+                  "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                }
+              ]
+            }
+            
+
+### Get Original Credit [GET]
+
+Click on Get Original Credit above to see how to look up an Original Credit request using the ID returned in the response to the original request.
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
+              "merchantRefNum": "merchant 07.05.17_16",
+              "txnTime": "2017-07-06T19:59:17Z",
+              "status": "PENDING",
+              "amount": 1000,
+              "card": {
+                "type": "VI",
+                "lastDigits": "1111",
+                "cardExpiry": {
+                  "month": 2,
+                  "year": 2019
+                }
+              },
+              "profile": {
+                "firstName": "Joe",
+                "lastName": "Smith",
+                "email": "Joe.Smith@canada.com"
+              },
+              "billingDetails": {
+                "street": "100 Queen Street West",
+                "city": "Toronto",
+                "state": "ON",
+                "country": "CA",
+                "zip": "M5H2N2"
+              },
+              "customerIp": "204.91.0.12",
+              "description": "Winning payment from Loto",
+              "currencyCode": "CAD",
+              "accountId": "123456789",
+              "links": [
+                {
+                  "rel": "self",
+                  "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                }
+              ]
+            }
+            
+### Get Original Credit Using Merchant Reference Number [GET /v1/originalcredits?merchantRefNum=13995817730005399]
+
+Click on Get Original Credit Using Merchant Reference Number above to see how to look up an Original Credit request using the merchant reference number used in the original request.
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+               "originalcredits": [
+                {
+                    "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
+                    "merchantRefNum": "13995817730005399",
+                    "txnTime": "2017-07-06T19:59:17Z",
+                    "status": "PENDING",
+                    "amount": 1000,
+                    "card": {
+                        "type": "VI",
+                        "lastDigits": "1111",
+                        "cardExpiry": {
+                        "month": 2,
+                        "year": 2019
+                    }
+                },
+                "profile": {
+                    "firstName": "Joe",
+                    "lastName": "Smith",
+                    "email": "Joe.Smith@canada.com"
+                },
+                "billingDetails": {
+                    "street": "100 Queen Street West",
+                    "city": "Toronto",
+                    "state": "ON",
+                    "country": "CA",
+                    "zip": "M5H2N2"
+                },
+                "customerIp": "204.91.0.12",
+                "description": "Winning payment from Loto",
+                "currencyCode": "CAD",
+                "accountId": "123456789",
+                "links": [
+                   {
+                    "rel": "self",
+                    "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                }
+                ]
+                 }
+                ],
+                "links": [
+                 {
+                    "rel": "self",
+                    "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits?merchantRefNum=merchant 07.05.17_16&limit=2&offset=2&startDate=2017-01-14T15:12:18Z&endDate=2017-04-04T15:12:18Z"
+                }
+            ]
+            }
 
 # Group Customer APIs
 
@@ -1422,6 +1994,7 @@ The settlement details in case of Card payment method can be sent through Reques
                 },
                 "email": "john.smith@email.com"
             }
+
 ## Modify Profile [/v1/customers/{customerId}]
 ### Associate a Payment Handle to a Customer [PUT]
 
