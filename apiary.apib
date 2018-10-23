@@ -1076,7 +1076,82 @@ Payment API is used to mark the submission of a payment from the customer side. 
             }
             
             
-### Get Payments [GET]
+### Get Payments [GET /v1/payments/{payment_id}]
+
+Click on Get Payments above to see how to fetch the payments by payment_id.
+
++ Parameter
+
+   + payment_id (String) - 86dcb68d-cbd0-4878-8da7-ffc0e6554513
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "14d380a4-e934-4cc8-b49e-a90cc082faa0",
+              "merchantRefNum": "merchant tokenization example-789",
+              "amount": 1295,
+              "settleWithAuth": false,
+              "dupCheck": false,
+              "partialAuth": {
+                "requested": false
+              },
+              "availableToSettle": 1295,
+              "description": "Magazine subscription",
+              "authCode": "1234567655",
+              "paymentHandle": {
+                "id": "ph_TGFVRedfghy875redfghnED",
+                "amount": "1295",
+                "merchantRefNum": "merchant tokenization example-789",
+                "currency": "CAD",
+                "customerIp": "204.91.0.12",
+                "flow": "redirect",
+                "customer": {
+                  "firstName": "John",
+                  "lastName": "Smith",
+                  "dateOfBirth": {
+                    "year": 1981,
+                    "month": 10,
+                    "day": 24
+                  },
+                  "email": "john.smith@email.com"
+                },
+                "billingAddress": {
+                  "nickName": "Home",
+                  "street": "100 Queen",
+                  "street2": "Unit 200",
+                  "city": "Toronto",
+                  "zip": "M5H 2N2",
+                  "country": "CA",
+                  "state": "ON"
+                },
+                "paymentMethod": "CARD",
+                "type": "SINGLE_USE",
+                "card": {
+                  "id": "paymentInstrumentId1",
+                  "holderName": "John Smith",
+                  "lastDigits": "1111",
+                  "cardExpiry": {
+                    "month": "12",
+                    "year": "2020"
+                  }
+                }
+              },
+              "txnTime": "2014-12-14T15:12:18Z",
+              "currencyCode": "CAD",
+              "avsResponse": "MATCH",
+              "cvvVerification": "NOT_PROCESSED",
+              "status": "COMPLETED"
+            }
+            
+### Get Payments by Merchant Reference number [GET /v1/payments?merchantRefNum={merchantRefNum_id}]
+
+Click on above to fetch the payments by merchant refernce number.
+
++ Parameter
+
+   + merchantRefNum_id (String) - merchant tokenization example-789
 
 + Response 200 (application/json)
 
