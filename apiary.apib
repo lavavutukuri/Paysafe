@@ -26,13 +26,13 @@ The following payment methods are supported
 
 +  id: `length <=36`(required) - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Payments.
 + merchantRefNum: `length <= 100` - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
-+ status (enum) -This is the status of the transaction request.
-    + RECEIVED – Our system has received the request and is waiting for the downstream processor’s response. 
-    + PAYABLE – The merchant can proceed with payments post request.
-    + PENDING – The transaction has been placed on hold due to risk considerations.
-    + FAILED – The transaction failed due to either an error or being declined. 
-    + CANCELLED – The authorization request has been fully reversed.
-    + EXPIRED – The payment handle got expired due to merchant not proceeding with transaction.
++ status (enum) - This is the status of the transaction request.
+    + RECEIVED - Our system has received the request and is waiting for the downstream processor’s response. 
+    + PAYABLE - The merchant can proceed with payments post request.
+    + PENDING - The transaction has been placed on hold due to risk considerations.
+    + FAILED - The transaction failed due to either an error or being declined. 
+    + CANCELLED - The authorization request has been fully reversed.
+    + EXPIRED - The payment handle got expired due to merchant not proceeding with transaction.
 + amount: 100
 + currency: CAD
 + redirectUrl: https://www.skrill.com - This is required only in case of Payment methods which has redirection
@@ -52,7 +52,7 @@ The following payment methods are supported
  - zip: MSH 2N2
  - country: CA
  - state: ON
-+ paymentChannel: CARD,SKRILL, PAYSAFE_CASH, PAYSAFE_CARD,GAURENTEED_ACH,SIGHTLINE(enum)
++ paymentChannel: CARD,SKRILL, PAYSAFE_CASH, PAYSAFE_CARD,GUARANTEED_ACH,SIGHTLINE(enum)
 + metaData - This Metadata will be passed to respective Payment channel API, if it supports to show some additional inputs in case of redirects to their UI
  - key1: value1
 + reusable: false(boolean)
