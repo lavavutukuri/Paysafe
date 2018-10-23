@@ -84,26 +84,37 @@ Using a card number – An authorization request that uses a credit card number 
     + cvv - Min = 3,Max = 4 This is the 3- or 4-digit security code that appears on the card following the card number.
     + track1 - This is Track 1 information read from the card's magnetic stripe.
     + track2 - This is Track 2 information read from the card's magnetic stripe.
-
-+ customer - Customer information is mandatory if savePaymentInstrument is set to true
++ Customer Profile - Customer information is mandatory if savePaymentInstrument is set to true
  - id: Gt56fR6 - Id is enough, and if id is not present, customer details like firstName, lastName, email ... has to be provided,if id is specified, the additional details provided will be overwritten to existing customer profile?
- - firstName: test
- - lastname: user
+ - status - The status of customer in the system, returned in the response.
+ - merchantCustomerId - length = 255 This is the reference number for the customer created by the merchant and submitted as part of the request. It must be unique for each customer.
+ - firstName: test - length<=80 This is the customer’s first name.
+ - lastname: user - length<=80 This is the customer's last name.
+ - locale - Customer's locale preference
  - dateOfBirth: year,month,day(array)
- - email: john.smith@email.com
+ - email: john.smith@email.com - length<=255 This is the customer's email address.
+ - phone:12345678
+ - mobile - mobile
+ - gender - gender
+ - nationality - indian
 + billingAddress - These are the billing details for the request.
- - nickname: home
  - street: 100 queen - length<=50 This is the first line of the street address in the billing address.
  - street2: unit 201 - length<=50 This is the second line of the street address in the billing address, if required (e.g., apartment number).
  - city: Toronto - length<=40 This is the city in the billing address.
- - zip: MSH 2N2
- - country: CA
- - state: ON
-+ paymentChannel: CARD,SKRILL, PAYSAFE_CASH, PAYSAFE_CARD,GAURENTEED_ACH,SIGHTLINE(enum)
-+ metaData - This Metadata will be passed to respective Payment channel API, if it supports to show some additional inputs in case of redirects to their UI
- - key1: value1
-+ reusable: false(boolean)
-+ descriptor: transaction for abcd
+ - zip: MSH 2N2 - length<=10 This is the postal/zip code in the billing address.
+ - country: CA - Size = 2
+ - state: ON - length<=40 Use the 2-character state or province codes for Canada or the United States.
+ - phone - length<=40 This is the customer's telephone number.
++ merchantDescriptor - This is the merchant descriptor that will be displayed on the customer's card statement.
+    + dynamicDescriptor: Online Store - This is a merchant descriptor that will be displayed on a customer’s card statement. Length = 20
+    + phone: 12345678 - This is the merchant’s phone number, which will be appended to the merchant descriptor on a customer’s card statement. Length = 13
++ links.type (enum) - Specifies all links
+    + REDIRECT - Merchant needs to do redirect to this url
+    + RETURN_SUCCESS - Paysafe will return to this merchant url post successful payment
+    + RETURN_FAILURE - Paysafe will return to this merchant url post if payment is failed
++ links.url - The actual URL
++ links.method - The http method
++ customerIp - length<=39ment handle attributes updated This is the customer's IP address.
 
 
 ## PaymentHandleResponse (object)
