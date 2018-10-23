@@ -19,15 +19,20 @@ The following payment methods are supported
 - Guaranteed ACH
 - Sightline Prepaid Cards
 
-# User [/user]
-
-+ Attributes (PaymentHandleRequest)
 
 # Data Structures
 
 ## PaymentHandleRequest (object)
 
-+ merchantRefNum: merchantRef-1234
++  id: `length <=36`(required) - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Payments.
++ merchantRefNum: `length <= 100` - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
++ status (enum) -This is the status of the transaction request.
+    + RECEIVED – Our system has received the request and is waiting for the downstream processor’s response. 
+    + PAYABLE – The merchant can proceed with payments post request.
+    + PENDING – The transaction has been placed on hold due to risk considerations.
+    + FAILED – The transaction failed due to either an error or being declined. 
+    + CANCELLED – The authorization request has been fully reversed.
+    + EXPIRED – The payment handle got expired due to merchant not proceeding with transaction.
 + amount: 100
 + currency: CAD
 + redirectUrl: https://www.skrill.com - This is required only in case of Payment methods which has redirection
@@ -53,9 +58,6 @@ The following payment methods are supported
 + reusable: false(boolean)
 + descriptor: transaction for abcd
 
-+ Attributes (PaymentHandleResponse)
-
-# Data Structures
 
 ## PaymentHandleResponse (object)
 
@@ -86,6 +88,11 @@ The following payment methods are supported
 + reusable: false(boolean)
 + descriptor: transaction for abcd
 + expiryTime: 2014-01-01T23:28:56Z - Expiry time of Payment handle varies between Payment channel
+
+
+## GetOriginalCreditMerRefRequest (object)
+
++  merchantRefNum: length<=36 - Id of a prevalidated or captured payout
 
 # Group Payment Method APIs
 
@@ -155,62 +162,28 @@ The following payment methods are supported
 
 # Group Payment Handle APIs
 
+## Payment Handle Object [/v1/paymenthandles]
 
-## Payment Handles [/v1/paymenthandles]
-
-The payment handle allows an integrator to accept a variety of payment methods through a single API.
+PaymentHandle objects allow you to accept a variety of payment methods. They represent a customer's payment instrument as well as profile information, and can be used with the Paysafe API : once it becomes payable, they can be used for charging.
 
 ### Create Payment Handle [POST]
+
+Creates a new Payment Handle object.
 
 + Request CARD Payment Handle with 3DS enabled (application/json)
 
     + Headers
 
             Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+            
+    + Attributes (PaymentHandleRequest)
     
     + Body
 
             {
               "amount": "100",
-              "merchantRefNum": "ORDER_ID:1231",
-              "paymentMethod": "CARD",
-              "accountId": "123456789",
-              "type": "SINGLE_USE",
               "currency": "CAD",
               "customerIp": "172.0.0.1",
-              "merchantUrl": "https://www.example.com",
-              "customerId": "Gt56fR6",
-              "billingAddress": {
-                "addressId": "DF45FDtrR"
-              },
-              "card": {
-              "id" : "paymentInstrumentId1",
-                "holderName": "John Smith",
-                "cardNum": "4012001036853337",
-                "cardExpiry": {
-                  "month": "12",
-                  "year": "2020"
-                },
-                "cvv" : "123"
-              },
-              "three_d_secure": {
-                "userAgent": "",
-                "acceptedHeader": ""
-              }
-            }
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-              "id": "ph_TGFVRedfghy875redfghnED",
-              "amount": "100",
-              "merchantRefNum": "merchantRef-1234",
-              "currency": "CAD",
-              "customerIp": "172.0.0.1",
-              "accountId": "123456789",
-              "flow": "redirect",
               "customer": {
                 "firstName": "John",
                 "lastName": "Smith",
@@ -233,14 +206,59 @@ The payment handle allows an integrator to accept a variety of payment methods t
               "paymentMethod": "CARD",
               "type": "SINGLE_USE",
               "card": {
-                "id" : "paymentInstrumentId1",
                 "holderName": "John Smith",
-                "lastDigits": "1111",
+                "cardNum": "4000000000000008",
                 "cardExpiry": {
                   "month": "12",
-                  "year": "2020"
+                  "year": "2018"
+                },
+                "cvv" : "123"
+              },
+              "merchantUrl": "https://www.paysafe.com",
+              "returnUrl": "https://www.paysafe.com"
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "ph_TGFVRedfghy875redfghnED",
+              "amount": "100",
+              "currency": "CAD",
+              "customerIp": "172.0.0.1",
+              "action": "REDIRECT",
+              "status": "PENDING",
+              "customer": {
+                "firstName": "John",
+                "lastName": "Smith",
+                "dateOfBirth": {
+                  "year": 1981,
+                  "month": 10,
+                  "day": 24
+                },
+                "email": "john.smith@email.com"
+              },
+              "billingAddress": {
+                "nickName": "Home",
+                "street": "100 Queen",
+                "street2": "Unit 200",
+                "city": "Toronto",
+                "zip": "M5H 2N2",
+                "country": "CA",
+                "state": "ON"
+              },
+              "paymentMethod": "CARD",
+              "type": "SINGLE_USE",
+              "card": {
+                "holderName": "John Smith",
+                "last4Digits": "0008",
+                "cardExpiry": {
+                  "month": "12",
+                  "year": "2018"
                 }
               },
+              "merchantUrl": "https://www.paysafe.com",
               "redirect": {
                  "url" : "acsurl",
                  "method" : "POST",
@@ -268,7 +286,8 @@ The payment handle allows an integrator to accept a variety of payment methods t
 
             {
                 "amount": "100",
-                "accountId": "123456789",
+                "currency": "CAD",
+                "customerIp": "172.0.0.1",
                 "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
@@ -291,19 +310,16 @@ The payment handle allows an integrator to accept a variety of payment methods t
                 "paymentMethod": "CARD",
                 "type": "SINGLE_USE",
                 "card": {
-                    "id" : "a02e52c7-c991-4418-966a-b62989cb0eae",
                     "holderName": "John Smith",
-                    "cardNum": "4111 1111 1111 1111",
+                    "cardNum": "4111111111111119",
                     "cardExpiry": {
                         "month": "12",
-                        "year": "2020"
+                        "year": "2018"
                     },
-                  "cvv" : "123"   
+                    "cvv" : "123"   
                 },
-                "three_d_secure": {
-                  "userAgent": "",
-                  "acceptedHeader": ""
-                }
+                "merchantUrl": "https://www.paysafe.com",
+                "returnUrl": "https://www.paysafe.com"
             }
 
 + Response 200 (application/json)
@@ -313,8 +329,10 @@ The payment handle allows an integrator to accept a variety of payment methods t
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
                 "amount": "100",
-                "accountId": "123456789",
-                "flow": "none",
+                "currency": "CAD",
+                "action": "NONE",
+                "status": "PAYABLE",
+                "customerIp": "172.0.0.1",
                 "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
@@ -337,17 +355,15 @@ The payment handle allows an integrator to accept a variety of payment methods t
                 "paymentMethod": "CARD",
                 "type": "SINGLE_USE",
                 "card": {
-                    "id" : "a02e52c7-c991-4418-966a-b62989cb0eae",
                     "holderName": "John Smith",
-                    "cardNum": "1111",
+                    "last4Digits": "1119",
                     "cardExpiry": {
                         "month": "12",
-                        "year": "2020"
+                        "year": "2018"
                     }
                 },
+              "merchantUrl": "https://www.paysafe.com",
               "three_d_secure": {
-                "userAgent": "",
-                "acceptedHeader": "",
                 "enrollmentStatus": "N"
               }
             }
@@ -723,6 +739,7 @@ The payment handle allows an integrator to accept a variety of payment methods t
             
 ### Fetch Payment Handle [GET /v1/paymenthandles/f343d2bd-f6a6-4a6d-9534-96c0abd97649]
 
+Fetch an existing payment handle object, using the unique payment handle ID returned during payment handle creation request.
 
 + Response 200 (application/json)
 
@@ -778,6 +795,8 @@ The payment handle allows an integrator to accept a variety of payment methods t
             }
 
 ### Fetch Payment Handle by Merchant Reference Number [GET /v1/paymenthandles?merchantRefNum=13995817730005389&masterMerchantId=234]
+
+Fetch an existing payment handle object, using the merchant genereated unique id used during payment handle creation request.
 
 + Response 200 (application/json)
 
@@ -840,8 +859,6 @@ Payment API is used to mark the submission of a payment from the customer side. 
 
 
 ### Create Payment with handle Id [POST]
-
-+ Attributes (PaymentHandleRequest)
 
 
 + Request Card Payment with Payment Handle (application/json)
@@ -1226,9 +1243,9 @@ Settlement with dupCheck and merchentRefNum
 
 ### Post Settlement [POST]
 
-1) A regular Settlement, where the initial request was an Authorization that now has to be settled
-2) A partial Settlement, where only part of the initial Authorization is settled, leaving the balance to be settled later
-3) A Settlement that is split into multiple merchant accounts, for merchant accounts that are configured to do so
+- A regular Settlement, where the initial request was an Authorization that now has to be settled
+- A partial Settlement, where only part of the initial Authorization is settled, leaving the balance to be settled later
+- A Settlement that is split into multiple merchant accounts, for merchant accounts that are configured to do so
 
 + Request (application/json)
 
@@ -1300,8 +1317,8 @@ Settlement with dupCheck and merchentRefNum
             
 ### Cancel a Settlement [PUT /v1/settlement/{settlement_id}]
 
-1. Settlement with dupCheck and merchentRefNum
-2. partial Settlement with amount in Request Body 
+- Settlement with dupCheck and merchentRefNum
+- Partial Settlement with amount in Request Body 
 
 + Parameter
 
@@ -1347,8 +1364,8 @@ The settlement details in case of Card payment method can be sent through Reques
 
 ### Post Refund [POST]
 
-A regular Refund
-2) A Refund that is split into multiple merchant accounts, for merchant accounts that are configured to do so
+- A regular Refund
+- A Refund that is split into multiple merchant accounts, for merchant accounts that are configured to do so
 
 + Request (application/json)
 
@@ -1454,8 +1471,8 @@ Standalone Credits allow merchants to issue credits to cardholders without requi
 
 ### Post Standalone Credit [POST]
 
-1. Credit with original Card information
-2. Credit with Payment Token
+- Credit with original Card information
+- Credit with Payment Token
 
 
 + Request (application/json)
@@ -1736,8 +1753,8 @@ Original Credits allow merchants with specific merchant category codes (MCCs) to
 
 ### Original Credit [POST]
 
-1. An Original Credit request using card information.
-2. An Original Credit request using a payment token.
+- An Original Credit request using card information.
+- An Original Credit request using a payment token.
 
 + Request (application/json)
 
@@ -1955,6 +1972,10 @@ Click on Get Original Credit above to see how to look up an Original Credit requ
 ### Get Original Credit Using Merchant Reference Number [GET /v1/originalcredits?merchantRefNum=13995817730005399]
 
 Click on Get Original Credit Using Merchant Reference Number above to see how to look up an Original Credit request using the merchant reference number used in the original request.
+
+| Parameter                     | Type    | Required | Description                          |
+| ---                           | ---     | ---      | ---                                  |
+| `merchantRefNum`                  | string  | required | id from Step 1
 
 + Response 200 (application/json)
 
