@@ -114,7 +114,7 @@ Using a card number – An authorization request that uses a credit card number 
     + RETURN_FAILURE - Paysafe will return to this merchant url post if payment is failed
 + links.url - The actual URL
 + links.method - The http method
-+ customerIp - length<=39ment handle attributes updated This is the customer's IP address.
++ customerIp - length<=39 This is the customer's IP address.
 
 
 ## PaymentHandleResponse (object)
@@ -140,7 +140,7 @@ Using a card number – An authorization request that uses a credit card number 
  - zip: MSH 2N2
  - country: CA
  - state: ON
-+ paymentChannel: CARD,SKRILL, PAYSAFE_CASH, PAYSAFE_CARD,GAURENTEED_ACH,SIGHTLINE(enum)
++ paymentChannel: CARD,SKRILL, PAYSAFE_CASH, PAYSAFE_CARD,GUARANTEED_ACH,SIGHTLINE(enum)
 + metaData - populated from input
  - key1: value1
 + reusable: false(boolean)
@@ -150,7 +150,7 @@ Using a card number – An authorization request that uses a credit card number 
 
 ## GetOriginalCreditMerRefRequest (object)
 
-+  merchantRefNum: length<=36 - Id of a prevalidated or captured payout
++  merchantRefNumId: length<=36 - Id of a prevalidated or captured payout
 
 # Group Payment Method APIs
 
@@ -167,7 +167,6 @@ Using a card number – An authorization request that uses a credit card number 
     + Body
 
             {
-                "countryCode" : "CA",
                 "currency" : "CAD",
                 "amount" : "2000",
                 "accountId": "123456789"
@@ -178,8 +177,7 @@ Using a card number – An authorization request that uses a credit card number 
     + Body
 
             {
-                "countryCode" : "CA",
-                "Currency" : "CAD",
+                "currency" : "CAD",
                 "accountId": "123456789",
                 "paymentMethods": [
                 {
@@ -235,6 +233,7 @@ Creates a new Payment Handle object.
             Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
             
     + Attributes (PaymentHandleRequest)
+    
     
     + Body
 
