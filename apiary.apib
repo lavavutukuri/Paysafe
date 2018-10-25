@@ -108,18 +108,34 @@ Using a card number – An authorization request that uses a credit card number 
 + merchantDescriptor - This is the merchant descriptor that will be displayed on the customer's card statement.
     + dynamicDescriptor: Online Store - This is a merchant descriptor that will be displayed on a customer’s card statement. Length = 20
     + phone: 12345678 - This is the merchant’s phone number, which will be appended to the merchant descriptor on a customer’s card statement. Length = 13
-+ links.type (enum) - Specifies all links
-    + REDIRECT - Merchant needs to do redirect to this url
-    + RETURN_SUCCESS - Paysafe will return to this merchant url post successful payment
-    + RETURN_FAILURE - Paysafe will return to this merchant url post if payment is failed
-+ links.url - The actual URL
-+ links.method - The http method
++ links (object) - Specifies all links
+    + type (enum)
+        + REDIRECT - Merchant needs to do redirect to this url
+        + RETURN_SUCCESS - Paysafe will return to this merchant url post successful payment
+        + RETURN_FAILURE - Paysafe will return to this merchant url post if payment is failed
+    + url - The actual URL
+    + method - The http method
 + customerIp - length<=39 This is the customer's IP address.
+
+## OriginalCreditResponse (object)
++ id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
++ merchantRefNum: P1234 (required) - length<=255 This is the merchant reference number created by the merchant and submitted as part of the request.
++ amount: 100 (required) - max=99999999999 This is the amount of the request, in minor units.
++ card (object) - These are the details of the card used for the request.Only one card object can be included in the request.
+    + paymentToken (required) - Max = 80 This is the payment token representing the card.
++ card (object) - These are the details of the card used for the request.Only one card object can be included in the request.   
+    + cardNum (): 4111111111111111 (required) - length=8-20 This is the card number used for the request.
+        + cardExpiry (required) - This is the card's expiry date.
+        + month:12 (number, required) - This is the card expiry month. length=2
+        + year:2020 (number, required) - This is the card expiry year. length=4
+    + cvv - This is the 3- or 4-digit security code that appears on the card following the card number.
+    + track1 - This is Track 1 information read from the card's magnetic stripe.
+    + track2 - This is Track 2 information read from the card's magnetic stripe.`
 
 
 ## PaymentHandleResponse (object)
 
-+ id: TGFVRedfghy875redfghnED
++ id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
 + merchantRefNum: merchantRef-1234
 + amount: 100
 + currency: CAD
@@ -147,10 +163,6 @@ Using a card number – An authorization request that uses a credit card number 
 + descriptor: transaction for abcd
 + expiryTime: 2014-01-01T23:28:56Z - Expiry time of Payment handle varies between Payment channel
 
-
-## GetOriginalCreditMerRefRequest (object)
-
-+  merchantRefNumId: length<=36 - Id of a prevalidated or captured payout
 
 # Group Payment Method APIs
 
@@ -209,6 +221,21 @@ Using a card number – An authorization request that uses a credit card number 
                 },
                 {
                   "name" : "Skrill",
+                  "type" : "wallet",
+                  "operationsSupported" : ["payment", "settlement", "refund"]
+                },
+                {
+                  "name" : "neteller",
+                  "type" : "wallet",
+                  "operationsSupported" : ["payment"]
+                },
+                {
+                  "name" : "paysafecash",
+                  "type" : "wallet",
+                  "operationsSupported" : ["payment", "settlement", "refund"]
+                },
+                {
+                  "name" : "paysafecard",
                   "type" : "wallet",
                   "operationsSupported" : ["payment", "settlement", "refund"]
                 }
@@ -316,17 +343,15 @@ Creates a new Payment Handle object.
                 }
               },
               "merchantUrl": "https://www.paysafe.com",
-              "redirect": {
-                 "url" : "acsurl",
-                 "method" : "POST",
-                 "formParameters" : {
-                 "paReq" : "eJxVUttOwkAQ/RXCO91LS2nJsEmVqBgwRAlGX0izndgGe2G7pfD37kIr+jZn",
-                 "TermURL" : "https://api.paysafe.com/v1/paymenthandles/callback/card/3ds",
-                 "MD" : "identifier_to_idenity_currentSession"
-             },
+              "links": 
+              {
+                 "type" : "REDIRECT",
+                 "url" : "https://pay.qa.netbanx.com/emulator/test_acs ",
+                 "method" : "GET"
+                },
             "headers" : {
                 "Content-Type" : "application/x-www-form-urlencoded"
-             }
+             
             },
             "three_d_secure": {
                 "enrollmentStatus": "Y"
@@ -384,7 +409,7 @@ Creates a new Payment Handle object.
     + Body
 
             {
-                "id": "ph_TGFVRedfghy875redfghnED",
+                "id": "ph_TGFVRedfghy875redfghnEDDDD",
                 "amount": "100",
                 "currency": "CAD",
                 "action": "NONE",
@@ -507,7 +532,7 @@ Creates a new Payment Handle object.
                     "gender": "MALE",
                     "nationality": "INDIAN",
                     "cellPhone": "1923218328",
-                    "locale": ""
+                    "locale": "",
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -531,13 +556,13 @@ Creates a new Payment Handle object.
                 "paymentType": "SKRILL",
                 "usage": "SINGLE_USE",
                 "action": "REDIRECT",
-                "executionMode": "SYNCHRONOUS",
-                 "links": [
-                           {
-                            "href": "https://www.skrill.com",
-                            "rel": "self"
-                    }
-                  ],
+                "executionMode": "ASYNCHRONOUS",
+                "links": 
+                 {
+                 "type" : "REDIRECT",
+                 "url" : "https://www.skrill.com",
+                 "method" : "GET"
+                },
                  "currency": "USD",
                  "returnUrl": "www.merchanturl.com",
                  "descriptor": "dsfdsg",
@@ -563,11 +588,22 @@ Creates a new Payment Handle object.
     + Body
 
             {
-                "amount": "148",
+                "merchantRefNum":"123sdfsdfsdf",
+                "amount": "100",
                 "accountId": "123456789",
-                "customer": {
+                "storedCredential": {
+                     "type": "ADHOC",
+                     "occurance": "INITIAL"
+                },
+                "profile": {
                     "firstName": "John",
                     "lastName": "Smith",
+                    "middleName": "sdfsd",
+                    "phone": "3245678",
+                    "gender": "MALE",
+                    "nationality": "INDIAN",
+                    "cellPhone": "1923218328",
+                    "locale": ""
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -582,10 +618,13 @@ Creates a new Payment Handle object.
                     "city": "Toronto",
                     "zip": "M5H 2N2",
                     "country": "CA",
-                    "state": "ON"
+                    "state": "ON",
+                    "phone": "345345435",
+                    "recipientName": ""
                 },
-                "paymentMethod": "NETELLER",
-                "type": "SINGLE_USE",
+                "paymentType": "NETELLER",
+                "currency": "USD",
+                "returnUrl": "www.merchanturl.com",
                 "neteller": {
                     "consumerId":"neteller.account@example.org",
                     "consumerVerificationId":"123456",
@@ -602,12 +641,28 @@ Creates a new Payment Handle object.
     + Body
 
             {
-                "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "148",
+                "id": "ph_TGFVRedfghy875redfghn",
+                "status": "PENDING",
                 "accountId": "123456789",
-                "customer": {
+                "amount": "100",
+                "merchantRefNum": "12345",
+                "storedCredential": {
+                     "type": "ADHOC",
+                     "occurance": "INITIAL"
+                },
+                "profile": {
+                    "id": "12345",
+                    "status": "PAYABLE",
+                    "merchantCustomerId": "JSHDDS",
+                    "paymentToken": "HSAFDYSFD",
                     "firstName": "John",
                     "lastName": "Smith",
+                    "middleName": "sdfsd",
+                    "phone": "3245678",
+                    "gender": "MALE",
+                    "nationality": "INDIAN",
+                    "cellPhone": "1923218328",
+                    "locale": "",
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -616,17 +671,35 @@ Creates a new Payment Handle object.
                     "email": "john.smith@email.com"
                 },
                 "billingAddress": {
+                    "id": "12345",
+                    "status": "PAYABLE",
                     "nickName": "Home",
                     "street": "100 Queen",
                     "street2": "Unit 200",
                     "city": "Toronto",
                     "zip": "M5H 2N2",
                     "country": "CA",
-                    "state": "ON"
+                    "state": "ON",
+                    "phone": "345345435",
+                    "recipientName": ""
                 },
-                "paymentMethod": "SKRILL",
-                "type": "SINGLE_USE",
-                "neteller": {
+                "paymentType": "NETELLER",
+                "usage": "SINGLE_USE",
+                "action": "REDIRECT",
+                "executionMode": "SYNCHRONOUS",
+                "links": 
+                 {
+                 "type" : "REDIRECT",
+                 "url" : "https://www.neteller.com",
+                 "method" : "GET"
+                },
+                 "currency": "USD",
+                 "returnUrl": "www.merchanturl.com",
+                 "descriptor": "dsfdsg",
+                 "creationDate": "12-23-1323",
+                 "expirationDate": "12-23-3446",
+                 "paymentHandleToken": "AJSASGA",
+                 "neteller": {
                     "consumerId":"neteller.account@example.org",
                     "consumerVerificationId":"123456",
                     "recipientDescription":"logo_url_alt_text",
@@ -645,11 +718,22 @@ Creates a new Payment Handle object.
     + Body
 
             {
-                "amount": "148",
+                "merchantRefNum":"123sdfsdfsdf",
+                "amount": "100",
                 "accountId": "123456789",
-                "customer": {
+                "storedCredential": {
+                     "type": "ADHOC",
+                     "occurance": "INITIAL"
+                },
+                "profile": {
                     "firstName": "John",
                     "lastName": "Smith",
+                    "middleName": "sdfsd",
+                    "phone": "3245678",
+                    "gender": "MALE",
+                    "nationality": "INDIAN",
+                    "cellPhone": "1923218328",
+                    "locale": ""
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -664,16 +748,20 @@ Creates a new Payment Handle object.
                     "city": "Toronto",
                     "zip": "M5H 2N2",
                     "country": "CA",
-                    "state": "ON"
+                    "state": "ON",
+                    "phone": "345345435",
+                    "recipientName": ""
                 },
-                "paymentMethod": "PAYSAFE_CARD",
-                "type": "SINGLE_USE",
+                "paymentType": "PAYSAFE_CARD",
+                "currency": "USD",
+                "returnUrl": "www.merchanturl.com",
                 "paysafecard": {
                     "consumerId": "merchantclientid",
                     "minAgeRestriction": 18,
                     "kycLevelRestriction": "SIMPLE",
                     "countryRestriction": "DE"
-                    }
+                 
+                 }
             }
 
 + Response 200 (application/json)
@@ -682,11 +770,27 @@ Creates a new Payment Handle object.
 
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "148",
+                "status": "PENDING",
                 "accountId": "123456789",
-                "customer": {
+                "amount": "100",
+                "merchantRefNum": "12345",
+                "storedCredential": {
+                     "type": "ADHOC",
+                     "occurance": "INITIAL"
+                },
+                "profile": {
+                    "id": "12345",
+                    "status": "PAYABLE",
+                    "merchantCustomerId": "JSHDDS",
+                    "paymentToken": "HSAFDYSFD",
                     "firstName": "John",
                     "lastName": "Smith",
+                    "middleName": "sdfsd",
+                    "phone": "3245678",
+                    "gender": "MALE",
+                    "nationality": "INDIAN",
+                    "cellPhone": "1923218328",
+                    "locale": "",
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -695,26 +799,41 @@ Creates a new Payment Handle object.
                     "email": "john.smith@email.com"
                 },
                 "billingAddress": {
+                    "id": "12345",
+                    "status": "PAYABLE",
                     "nickName": "Home",
                     "street": "100 Queen",
                     "street2": "Unit 200",
                     "city": "Toronto",
                     "zip": "M5H 2N2",
                     "country": "CA",
-                    "state": "ON"
+                    "state": "ON",
+                    "phone": "345345435",
+                    "recipientName": ""
                 },
-                "paymentMethod": "PAYSAFE_CARD",
-                "type": "SINGLE_USE",
+                "paymentType": "PAYSAFE_CARD",
+                "usage": "SINGLE_USE",
+                "action": "REDIRECT",
+                "executionMode": "ASYNCHRONOUS",
+                "links": 
+                 {
+                 "type" : "REDIRECT",
+                 "url" : "https://www.paysafecard.com",
+                 "method" : "GET"
+                },
+                 "currency": "USD",
+                 "returnUrl": "www.merchanturl.com",
+                 "descriptor": "dsfdsg",
+                 "creationDate": "12-23-1323",
+                 "expirationDate": "12-23-3446",
+                 "paymentHandleToken": "AJSASGA",
                 "paysafecard": {
                     "consumerId": "merchantclientid",
                     "minAgeRestriction": 18,
                     "kycLevelRestriction": "SIMPLE",
                     "countryRestriction": "DE"
+                 
                 },
-                "redirect": {
-                    "url": "redirect_url",
-                    "method": "GET"
-                }
             }
             
 + Request PaysafeCash Payment Handle creation (application/json)
@@ -726,11 +845,22 @@ Creates a new Payment Handle object.
     + Body
 
             {
-                "amount": "148",
+                "merchantRefNum":"123sdfsdfsdf",
+                "amount": "100",
                 "accountId": "123456789",
-                "customer": {
+                "storedCredential": {
+                     "type": "ADHOC",
+                     "occurance": "INITIAL"
+                },
+                "profile": {
                     "firstName": "John",
                     "lastName": "Smith",
+                    "middleName": "sdfsd",
+                    "phone": "3245678",
+                    "gender": "MALE",
+                    "nationality": "INDIAN",
+                    "cellPhone": "1923218328",
+                    "locale": ""
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -745,16 +875,20 @@ Creates a new Payment Handle object.
                     "city": "Toronto",
                     "zip": "M5H 2N2",
                     "country": "CA",
-                    "state": "ON"
+                    "state": "ON",
+                    "phone": "345345435",
+                    "recipientName": ""
                 },
-                "paymentMethod": "PAYSAFE_CASH",
-                "type": "SINGLE_USE",
+                "paymentType": "PAYSAFE_CASH",
+                "currency": "USD",
+                "returnUrl": "www.merchanturl.com",
                 "paysafecash": {
                     "consumerId": "merchantclientid",
                     "minAgeRestriction": 18,
                     "kycLevelRestriction": "SIMPLE",
                     "countryRestriction": "DE"
-                    }
+                 
+                },
             }
 
 + Response 200 (application/json)
@@ -763,11 +897,27 @@ Creates a new Payment Handle object.
 
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "148",
+                "status": "PENDING",
                 "accountId": "123456789",
-                "customer": {
+                "amount": "100",
+                "merchantRefNum": "12345",
+                "storedCredential": {
+                     "type": "ADHOC",
+                     "occurance": "INITIAL"
+                },
+                "profile": {
+                    "id": "12345",
+                    "status": "PAYABLE",
+                    "merchantCustomerId": "JSHDDS",
+                    "paymentToken": "HSAFDYSFD",
                     "firstName": "John",
                     "lastName": "Smith",
+                    "middleName": "sdfsd",
+                    "phone": "3245678",
+                    "gender": "MALE",
+                    "nationality": "INDIAN",
+                    "cellPhone": "1923218328",
+                    "locale": "",
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -776,22 +926,41 @@ Creates a new Payment Handle object.
                     "email": "john.smith@email.com"
                 },
                 "billingAddress": {
+                    "id": "12345",
+                    "status": "PAYABLE",
                     "nickName": "Home",
                     "street": "100 Queen",
                     "street2": "Unit 200",
                     "city": "Toronto",
                     "zip": "M5H 2N2",
                     "country": "CA",
-                    "state": "ON"
+                    "state": "ON",
+                    "phone": "345345435",
+                    "recipientName": ""
                 },
-                "paymentMethod": "PAYSAFE_CASH",
-                "type": "SINGLE_USE",
-               "paysafecash": {
+                "paymentType": "PAYSAFE_CASH",
+                "usage": "SINGLE_USE",
+                "action": "REDIRECT",
+                "executionMode": "ASYNCHRONOUS",
+                "links": 
+                 {
+                 "type" : "REDIRECT",
+                 "url" : "https://www.paysafecash.com",
+                 "method" : "GET"
+                },
+                 "currency": "USD",
+                 "returnUrl": "www.merchanturl.com",
+                 "descriptor": "dsfdsg",
+                 "creationDate": "12-23-1323",
+                 "expirationDate": "12-23-3446",
+                 "paymentHandleToken": "AJSASGA",
+                "paysafecash": {
                     "consumerId": "merchantclientid",
                     "minAgeRestriction": 18,
                     "kycLevelRestriction": "SIMPLE",
                     "countryRestriction": "DE"
-                }
+                 
+                },
             }
             
 ### Fetch Payment Handle [GET /v1/paymenthandles/f343d2bd-f6a6-4a6d-9534-96c0abd97649]
@@ -1819,6 +1988,8 @@ Original Credits allow merchants with specific merchant category codes (MCCs) to
 
             Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
     
+    + Attributes (OriginalCreditResponse)
+    
     + Body
 
             {
@@ -1948,7 +2119,7 @@ Click on Cancel an Original Credit above to see how to submit a Cancel Original 
 
 + Parameter
 
-   + original_credit_id (String) - 86dcb68d-cbd0-4878-8da7-ffc0e6554513
+   + original_credit_id (String) - This is the ID returned in the response to the Original Credit request. Example: 86dcb68d-cbd0-4878-8da7-ffc0e6554513.
 
 + Request (application/json)
 
@@ -1980,9 +2151,14 @@ Click on Cancel an Original Credit above to see how to submit a Cancel Original 
             }
             
 
-### Get Original Credit [GET]
+### Get Original Credit [GET /v1/originalcredits/{original_credit_id}]
 
 Click on Get Original Credit above to see how to look up an Original Credit request using the ID returned in the response to the original request.
+
++ Parameter
+
+   + original_credit_id (String) - This is the ID returned in the response to the Original Credit request. Example: 86dcb68d-cbd0-4878-8da7-ffc0e6554513.
+
 
 + Response 200 (application/json)
 
@@ -2026,17 +2202,19 @@ Click on Get Original Credit above to see how to look up an Original Credit requ
               ]
             }
             
-### Get Original Credit Using Merchant Reference Number [GET /v1/originalcredits?merchantRefNum=13995817730005399]
+### Get Original Credit Using Merchant Reference Number [GET /v1/originalcredits?merchantRefNum={merchantRefNum}]
 
 Click on Get Original Credit Using Merchant Reference Number above to see how to look up an Original Credit request using the merchant reference number used in the original request.
 
-| Parameter                     | Type    | Required | Description                          |
-| ---                           | ---     | ---      | ---                                  |
-| `merchantRefNum`                  | string  | required | id from Step 1
++ Parameter
+
+   + merchantRefNum (String) - This is the merchant reference number created by the merchant and submitted as part of the request. Example: merchant 07.05.17_16.
+
 
 + Response 200 (application/json)
-
-    + Body
+   + Attributes (OriginalCreditResponse)
+    
+   + Body
 
             {
                "originalcredits": [
