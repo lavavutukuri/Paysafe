@@ -131,38 +131,53 @@ Using a card number – An authorization request that uses a credit card number 
     + cvv - This is the 3- or 4-digit security code that appears on the card following the card number.
     + track1 - This is Track 1 information read from the card's magnetic stripe.
     + track2 - This is Track 2 information read from the card's magnetic stripe.`
++ dupCheck: true (boolean) - This validates that this request is not a duplicate. A request is considered a duplicate if the merchantRefNum has already been used in a previous request within the past 90 days.
++ description: Purchase Credit - This is a description of the transaction, provided by the merchant. length<=255
++ customerIp: 204.91.0.12 -This is the customer's IP address.length<=39
++ accountId: 123456789 (optional) -This is the merchant account number.
++ profile - These are some details about the customer.
+ - firstName: test -  This is the customer’s first name. length<=80
+ - lastname: user -  This is the customer's last name. length<=80
+ - email: john.smith@email.com -  This is the customer's email address. length<=255
++ billingAddress - These are the billing details for the request.
+ - street: 100 queen - length<=50 This is the first line of the street address in the billing address.
+ - street2: unit 201 - length<=50 This is the second line of the street address in the billing address, if required (e.g., apartment number).
+ - city: Toronto - This is the city in the billing address. length<=40
+ - zip: MSH 2N2 - This is the postal/zip code in the billing address. length<=10
+ - country: CA - Size = 2
+ - state: ON - Use the 2-character state or province codes for Canada or the United States. length<=40
+ - phone - This is the customer's telephone number. length<=40
 
+## RefundResponse (object)
++ id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
++ merchantRefNum: P1234 (required) - length<=255 This is the merchant reference number created by the merchant and submitted as part of the request.
++ amount: 100 (required) - max=99999999999 This is the amount of the request, in minor units.
++ dupCheck: true (boolean) - This validates that this request is not a duplicate. A request is considered a duplicate if the merchantRefNum has already been used in a previous request within the past 90 days.
++ description: Purchase Credit - This is a description of the transaction, provided by the merchant. length<=255
++ customerIp: 204.91.0.12 -This is the customer's IP address.length<=39
++ accountId: 123456789 (optional) -This is the merchant account number.
++ status (enum) - This is the status of the transaction request.
+    + RECEIVED 
+    + COMPLETED 
+    + PENDING 
+    + FAILED 
+    + CANCELLED
 
-## PaymentHandleResponse (object)
-
-+ id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
-+ merchantRefNum: merchantRef-1234
-+ amount: 100
-+ currency: CAD
-+ action: REDIRECT,NONE,CUSTOM(enum) - what action checkout needs to do
-+ status: COMPLETED,PENDING,FAILED,REJECTED,CANCELLED(enum) - status of the paymentHandle
-+ customer - Customer information will be the same what it receives. It won't be populated with other details using id, as it is using publishable key
- - id: Gt56fR6 - id will be populated if customer is not registered and savePaymentInstrument is set to true
- - firstName: test
- - lastname: user
- - dateOfBirth: year,month,day(array)
- - email: john.smith@email.com
-+ billingAddress - This will be the same what the service receives. It won't be populated with other details using id, as it is using publishable key
- - id: DF45FDtrR
- - nickname: home
- - street: 100 queen
- - street2: unit 201
- - city: Toronto
- - zip: MSH 2N2
- - country: CA
- - state: ON
-+ paymentChannel: CARD,SKRILL, PAYSAFE_CASH, PAYSAFE_CARD,GUARANTEED_ACH,SIGHTLINE(enum)
-+ metaData - populated from input
- - key1: value1
-+ reusable: false(boolean)
-+ descriptor: transaction for abcd
-+ expiryTime: 2014-01-01T23:28:56Z - Expiry time of Payment handle varies between Payment channel
-
+## SettlementResponse (object)
++ id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
++ merchantRefNum: P1234 (required) - length<=255 This is the merchant reference number created by the merchant and submitted as part of the request.
++ amount: 100 (required) - max=99999999999 This is the amount of the request, in minor units.
++ dupCheck: true (boolean) - This validates that this request is not a duplicate. A request is considered a duplicate if the merchantRefNum has already been used in a previous request within the past 90 days.
++ description: Purchase Credit - This is a description of the transaction, provided by the merchant. length<=255
++ customerIp: 204.91.0.12 -This is the customer's IP address.length<=39
++ accountId: 123456789 (optional) -This is the merchant account number.
++ status (enum) - This is the status of the transaction request.
+    + RECEIVED 
+    + COMPLETED 
+    + PENDING 
+    + FAILED 
+    + CANCELLED    
++ availableToRefund: 25 - This is the amount of of the Authorization remaining to Refund, in minor units.Read Only, max=99999999999
 
 # Group Payment Method APIs
 
@@ -1394,7 +1409,7 @@ Click on above to fetch the payments by merchant refernce number.
 
 + Parameter
 
-   + merchantRefNum_id (String) - merchant tokenization example-789
+   + merchantRefNum_id : merchant tokenization example-789
 
 + Response 200 (application/json)
 
@@ -1465,7 +1480,7 @@ Settlement with dupCheck and merchentRefNum
 
 + Parameter
 
-    + auth_id (String) - Qwdqdasdansdbasdtftoiqwo
+    + auth_id : e3058030-1a0c-4b8a-b7f7-ceb79157df3f
 
 ### Post Settlement [POST]
 
@@ -1478,11 +1493,13 @@ Settlement with dupCheck and merchentRefNum
     + Headers
 
             Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+            
+    + Attributes(SettlementResponse)
     
     + Body
 
             {
-              "merchantRefNum": "merchantRef_2016_04_11_05",
+              "merchantRefNum": "13995817730005399",
               "dupCheck": true
             }
                         
@@ -1492,7 +1509,7 @@ Settlement with dupCheck and merchentRefNum
 
             {
               "id": "d1fb46ee-2736-4ef5-a724-f263ace75373",
-              "merchantRefNum": "merchantRef_2016_04_11_05",
+              "merchantRefNum": "13995817730005399",
               "amount": 5500,
               "availableToRefund": 5500,
               "dupCheck": true,
@@ -1515,7 +1532,7 @@ Settlement with dupCheck and merchentRefNum
     + Body
 
             {
-              "merchantRefNum": "merchantRef_2016_04_11_05",
+              "merchantRefNum": "13995817730005399",
               "amount": 2250,
               "dupCheck": true
             }
@@ -1527,7 +1544,7 @@ Settlement with dupCheck and merchentRefNum
 
             {
               "id": "d1fb46ee-2736-4ef5-a724-f263ace75373",
-              "merchantRefNum": "merchantRef_2016_04_11_05",
+              "merchantRefNum": "13995817730005399",
               "amount": 2250,
               "availableToRefund": 2250,
               "dupCheck": true,
@@ -1548,7 +1565,7 @@ Settlement with dupCheck and merchentRefNum
 
 + Parameter
 
-    + settlement_id (String) - Qwdqdasdansdbasdtftoiqwo
+    + settlement_id : `d1fb46ee-2736-4ef5-a724-f263ace75373`
 
 + Request (application/json)
 
@@ -1586,7 +1603,7 @@ The settlement details in case of Card payment method can be sent through Reques
 
 + Parameter
 
-    + payments_id (String) - Qwdqdasdansdbasdtftoiqwo
+    + payments_id : `6ddbc05a-ff40-4dc1-b2d3-f200934dfdde`
 
 ### Post Refund [POST]
 
@@ -1598,11 +1615,13 @@ The settlement details in case of Card payment method can be sent through Reques
     + Headers
 
             Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+            
+    + Attributes(RefundResponse)
     
     + Body
 
             {
-              "merchantRefNum": "merchantRef_2016_04_11_05",
+              "merchantRefNum": "13995817730005399",
               "amount": 5500,
               "dupCheck": true
             }
@@ -1613,7 +1632,7 @@ The settlement details in case of Card payment method can be sent through Reques
 
             {
               "id": "d1fb46ee-2736-4ef5-a724-f263ace75374",
-              "merchantRefNum": "merchantRef_2016_04_11_05",
+              "merchantRefNum": "13995817730005399",
               "amount": 5500,
               "dupCheck": true,
               "txnTime": "2017-02-14T15:12:18Z",
@@ -1632,7 +1651,7 @@ Click on Cancel a Refund above to see how to submit a Cancel Refund request.
 
 + Parameter
 
-    + refund_id (String) - Qwdqdasdansdbasdtftoiqwo
+    + refund_id : `d1fb46ee-2736-4ef5-a724-f263ace75374`
     
 + Request (application/json)
 
@@ -1662,7 +1681,7 @@ Click on Cancel a Refund above to see how to submit a Cancel Refund request.
               ]
             }
             
-### Get Refund [GET]
+### Get Refund [GET ]
 
 + Response 200 (application/json)
 
@@ -1670,7 +1689,7 @@ Click on Cancel a Refund above to see how to submit a Cancel Refund request.
 
             {
               "id": "d1fb46ee-2736-4ef5-a724-f263ace75374",
-              "merchantRefNum": "merchantRef_2016_04_11_05",
+              "merchantRefNum": "13995817730005399",
               "amount": 5500,
               "dupCheck": true,
               "txnTime": "2017-02-14T15:12:18Z",
@@ -1706,6 +1725,8 @@ Standalone Credits allow merchants to issue credits to cardholders without requi
     + Headers
 
             Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+            
+    + Attributes (OriginalCreditResponse)
     
     + Body
 
@@ -1834,7 +1855,7 @@ Click on Cancel a Standalone Credit above to see how to submit a Cancel Standalo
 
 + Parameter
 
-    + standalone_credit_id (String) - 86dcb68d-cbd0-4878-8da7-ffc0e6554513
+    + standalone_credit_id : `86dcb68d-cbd0-4878-8da7-ffc0e6554513`
     
 
 + Request (application/json)
@@ -1867,9 +1888,13 @@ Click on Cancel a Standalone Credit above to see how to submit a Cancel Standalo
             }
             
 
-### Get Standalone Credit [GET]
+### Get Standalone Credit [GET /v1/standalonecredits/{standalone_credit_id}]
 
 Click on Get Standalone Credit above to see how to look up a Standalone Credit request using the ID returned in the response to the original request.
+
++ Parameter
+
+    + standalone_credit_id : `86dcb68d-cbd0-4878-8da7-ffc0e6554513`
 
 + Response 200 (application/json)
 
@@ -1913,9 +1938,13 @@ Click on Get Standalone Credit above to see how to look up a Standalone Credit r
               ]
             }
             
-### Get Standalone Credit Using Merchant Reference Number  [GET /v1/standalonecredits?merchantRefNum=13995817730005399]
+### Get Standalone Credit Using Merchant Reference Number  [GET /v1/standalonecredits?merchantRefNum={merchantRefNum}]
 
 Click on Get Standalone Credit Using Merchant Reference Number above to see how to look up a Standalone Credit using the merchant reference number used in the original request.
+
++ Parameter
+
+   + merchantRefNum : 13995817730005399
 
 + Response 200 (application/json)
 
@@ -2119,7 +2148,7 @@ Click on Cancel an Original Credit above to see how to submit a Cancel Original 
 
 + Parameter
 
-   + original_credit_id (String) - This is the ID returned in the response to the Original Credit request. Example: 86dcb68d-cbd0-4878-8da7-ffc0e6554513.
+   + original_credit_id : `86dcb68d-cbd0-4878-8da7-ffc0e6554513` - This is the ID returned in the response to the Original Credit request. Example: 86dcb68d-cbd0-4878-8da7-ffc0e6554513.
 
 + Request (application/json)
 
@@ -2157,7 +2186,7 @@ Click on Get Original Credit above to see how to look up an Original Credit requ
 
 + Parameter
 
-   + original_credit_id (String) - This is the ID returned in the response to the Original Credit request. Example: 86dcb68d-cbd0-4878-8da7-ffc0e6554513.
+   + original_credit_id : `86dcb68d-cbd0-4878-8da7-ffc0e6554513` - This is the ID returned in the response to the Original Credit request. Example: 86dcb68d-cbd0-4878-8da7-ffc0e6554513.
 
 
 + Response 200 (application/json)
@@ -2208,12 +2237,10 @@ Click on Get Original Credit Using Merchant Reference Number above to see how to
 
 + Parameter
 
-   + merchantRefNum (String) - This is the merchant reference number created by the merchant and submitted as part of the request. Example: merchant 07.05.17_16.
-
+   + merchantRefNum : 13995817730005399 - This is the merchant reference number created by the merchant and submitted as part of the request. 
 
 + Response 200 (application/json)
-   + Attributes (OriginalCreditResponse)
-    
+  
    + Body
 
             {
