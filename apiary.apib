@@ -116,6 +116,8 @@ Using a card number – An authorization request that uses a credit card number 
     + url - The actual URL
     + method - The http method
 + customerIp - length<=39 This is the customer's IP address.
++ paymentHandleIdFrom - This is the existing payment handle id, from which payment instrument and profile details has to be fetched. We can only use Payment handles whose usage is set to LOOKUP for this. length<=36
++ timeToLiveSeconds: 1212121212 (number) - This is the period of time the single-use token is valid before expiration, in seconds, returned in the response.(Long)
 
 ## OriginalCreditResponse (object)
 + id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
@@ -195,7 +197,7 @@ Using a card number – An authorization request that uses a credit card number 
 
             {
                 "currency" : "CAD",
-                "amount" : "2000",
+                "amount" : "200",
                 "accountId": "123456789"
             } 
 
@@ -328,6 +330,7 @@ Creates a new Payment Handle object.
               "customerIp": "172.0.0.1",
               "action": "REDIRECT",
               "status": "PENDING",
+              "timeToLiveSeconds":"899",
               "customer": {
                 "firstName": "John",
                 "lastName": "Smith",
@@ -430,6 +433,7 @@ Creates a new Payment Handle object.
                 "action": "NONE",
                 "status": "PAYABLE",
                 "customerIp": "172.0.0.1",
+                "timeToLiveSeconds":"899",
                 "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
@@ -531,6 +535,7 @@ Creates a new Payment Handle object.
                 "accountId": "123456789",
                 "amount": "100",
                 "merchantRefNum": "12345",
+                "timeToLiveSeconds":"899",
                 "storedCredential": {
                      "type": "ADHOC",
                      "occurance": "INITIAL"
@@ -661,6 +666,7 @@ Creates a new Payment Handle object.
                 "accountId": "123456789",
                 "amount": "100",
                 "merchantRefNum": "12345",
+                "timeToLiveSeconds":"899",
                 "storedCredential": {
                      "type": "ADHOC",
                      "occurance": "INITIAL"
@@ -789,6 +795,7 @@ Creates a new Payment Handle object.
                 "accountId": "123456789",
                 "amount": "100",
                 "merchantRefNum": "12345",
+                "timeToLiveSeconds":"899",
                 "storedCredential": {
                      "type": "ADHOC",
                      "occurance": "INITIAL"
@@ -916,6 +923,7 @@ Creates a new Payment Handle object.
                 "accountId": "123456789",
                 "amount": "100",
                 "merchantRefNum": "12345",
+                "timeToLiveSeconds":"899",
                 "storedCredential": {
                      "type": "ADHOC",
                      "occurance": "INITIAL"
@@ -2087,7 +2095,7 @@ Original Credits allow merchants with specific merchant category codes (MCCs) to
     + Body
 
             {
-              "merchantRefNum": "merchant 07.05.17_16",
+              "merchantRefNum": "13995817730005399",
               "amount": 1000,
               "dupCheck": "true",
               "card": {
@@ -2104,7 +2112,7 @@ Original Credits allow merchants with specific merchant category codes (MCCs) to
 
             {
               "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-              "merchantRefNum": "merchant 07.05.17_16",
+              "merchantRefNum": "13995817730005399",
               "txnTime": "2017-07-06T19:59:17Z",
               "status": "PENDING",
               "amount": 1000,
@@ -2195,7 +2203,7 @@ Click on Get Original Credit above to see how to look up an Original Credit requ
 
             {
               "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-              "merchantRefNum": "merchant 07.05.17_16",
+              "merchantRefNum": "13995817730005399",
               "txnTime": "2017-07-06T19:59:17Z",
               "status": "PENDING",
               "amount": 1000,
@@ -2289,6 +2297,138 @@ Click on Get Original Credit Using Merchant Reference Number above to see how to
                     "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits?merchantRefNum=merchant 07.05.17_16&limit=2&offset=2&startDate=2017-01-14T15:12:18Z&endDate=2017-04-04T15:12:18Z"
                 }
             ]
+            }
+
+
+# Group Saved Cards APIs
+
+## Saved card [/v1/singleusecustomertokens]
+
+### Create Single Use Customer Tokens [POST]
+
+Remember me 
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+               "customerId" : "e979132e-a1f7-454b-a764-2aada299b3be",
+               "paymentTypes" : [ "CARD", "ACH"]
+            }
+
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+             "id" : "86dcb68d-cbd0-4878-8da7-ffc0e6554513",     
+             "customerId" : "e979132e-a1f7-454b-a764-2aada299b3be",
+             "paymentTypes" : [ "CARD", "ACH"],
+             "timeToLiveSeconds" : "899",
+             "status" : "ACTIVE",
+             "merchantCustomerId" : "mycustomer1",
+             "locale" : "en_US",
+             "firstName" : "John",
+             "lastName" : "Smith",
+             "email" : "john.smith@somedomain.com",
+             "phone" : "713-444-5555",
+             "addresses": [
+                {
+                  "id": "6a275b7c-6f11-4ed1-ae77-21071724574a",
+                  "status": "ACTIVE",
+                  "nickName": "Home",
+                  "street": "100 Queen",
+                  "street2": "Unit 201",
+                  "city": "Toronto",
+                  "zip": "M5H 2N2",
+                  "country": "CA",
+                  "state": "ON",
+                  "recipientName": "Jane Smith",
+                  "phone": "647-788-3901"
+                }
+              ],
+             "paymentHandles" : [
+              {
+                "id" : "52c54707-a536-4c3d-b2e9-ebdba8c1bd3e",
+                "timeToLiveSeconds" : "899",
+                "usage": "LOOKUP",
+                "paymentType": "CARD",
+                "paymentHandleToken" : "hdhfsafhdfsahg",
+                "card": {
+                    "lastDigits": "1111",
+                    "cardExpiry": {
+                        "month" : "12",
+                        "year" : "2020"
+                    },
+                    "holderName": "TEST CUSTOMER"
+                },
+                "billingAddressId": "6a275b7c-6f11-4ed1-ae77-21071724574a"
+             }]
+            }
+
+### Get Saved Cards [GET /v1/singleusecustomertokens/{id}]
+
+Click on Get Saved Cards above to see how to look up an Saved Cards using the ID returned in the response to the request.
+
++ Parameter
+
+   + id : `86dcb68d-cbd0-4878-8da7-ffc0e6554513` - This is the ID returned in the response to the Saved cards. Example: 86dcb68d-cbd0-4878-8da7-ffc0e6554513.
+
+
++ Response 200 (application/json)
+
+    + Body
+            
+            {
+             "id" : "86dcb68d-cbd0-4878-8da7-ffc0e6554513",     
+             "customerId" : "e979132e-a1f7-454b-a764-2aada299b3be",
+             "paymentTypes" : [ "CARD", "ACH"],
+             "timeToLiveSeconds" : "899",
+             "status" : "ACTIVE",
+             "merchantCustomerId" : "mycustomer1",
+             "locale" : "en_US",
+             "firstName" : "John",
+             "lastName" : "Smith",
+             "email" : "john.smith@somedomain.com",
+             "phone" : "713-444-5555",
+             "addresses": [
+                {
+                  "id": "6a275b7c-6f11-4ed1-ae77-21071724574a",
+                  "status": "ACTIVE",
+                  "nickName": "Home",
+                  "street": "100 Queen",
+                  "street2": "Unit 201",
+                  "city": "Toronto",
+                  "zip": "M5H 2N2",
+                  "country": "CA",
+                  "state": "ON",
+                  "recipientName": "Jane Smith",
+                  "phone": "647-788-3901"
+                }
+              ],
+             "paymentHandles" : [
+               {
+                "id" : "52c54707-a536-4c3d-b2e9-ebdba8c1bd3e",
+                "timeToLiveSeconds" : "899",
+                "usage": "LOOKUP",
+                "paymentType": "CARD",
+                "paymentHandleToken" : "hdhfsafhdfsahg",
+                "card": {
+                    "lastDigits": "1111",
+                    "cardExpiry": {
+                        "month" : "12",
+                        "year" : "2020"
+                    },
+                    "holderName": "TEST CUSTOMER"
+                },
+                "billingAddressId": "6a275b7c-6f11-4ed1-ae77-21071724574a"
+             }]
             }
 
 # Group Customer APIs
