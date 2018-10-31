@@ -181,11 +181,13 @@ Using a card number – An authorization request that uses a credit card number 
     + CANCELLED    
 + availableToRefund: 25 - This is the amount of of the Authorization remaining to Refund, in minor units.Read Only, max=99999999999
 
-# Group Payment Method APIs
+# Group Metadata APIs
 
-## Fetch Available Payment Methods [/v1/paymentMethods]
+## Fetch Available Payment Methods [/v1/paymentmethods]
 
 ### Payment Methods [POST]
+
+This API will provide all the available payment methods for the Merchant. Merchant can have his own configuration defined at Paysafe side, which will be used to filter the payment methods based on amount and currency.
 
 + Request (application/json)
 
@@ -197,8 +199,7 @@ Using a card number – An authorization request that uses a credit card number 
 
             {
                 "currency" : "CAD",
-                "amount" : "200",
-                "accountId": "123456789"
+                "amount" : "200"
             } 
 
 + Response 200 (application/json)
@@ -207,11 +208,11 @@ Using a card number – An authorization request that uses a credit card number 
 
             {
                 "currency" : "CAD",
-                "accountId": "123456789",
                 "paymentMethods": [
                 {
                   "name": "Card",
                   "type": "scheme",
+                  "operationsSupported" : ["payment", "settlement", "refund"],
                   "details": [
                     {
                       "key": "cardNumber",
@@ -244,7 +245,7 @@ Using a card number – An authorization request that uses a credit card number 
                 {
                   "name" : "neteller",
                   "type" : "wallet",
-                  "operationsSupported" : ["payment"]
+                  "operationsSupported" : ["payment", "settlement", "refund"]
                 },
                 {
                   "name" : "paysafecash",
@@ -262,120 +263,16 @@ Using a card number – An authorization request that uses a credit card number 
 
 # Group Payment Handle APIs
 
-## Payment Handle Object [/v1/paymenthandles]
+## Payment Handle [/v1/paymenthandles]
 
-PaymentHandle objects allow you to accept a variety of payment methods. They represent a customer's payment instrument as well as profile information, and can be used with the Paysafe API : once it becomes payable, they can be used for charging.
+PaymentHandle is a contract of a Payment, which contains customer's payment instrument and other details like amount, payment method, customer profile etc. This accepts a variety of payment methods with a single API. 
+<br>
+Payment Handle has its own states. Payment can be initiated on this Payment Handle only if the status is PAYABLE.
 
 ### Create Payment Handle [POST]
 
 Creates a new Payment Handle object.
 
-+ Request CARD Payment Handle with 3DS enabled (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-            
-    + Attributes (PaymentHandleRequest)
-    
-    
-    + Body
-
-            {
-              "amount": "100",
-              "currency": "CAD",
-              "customerIp": "172.0.0.1",
-              "customer": {
-                "firstName": "John",
-                "lastName": "Smith",
-                "dateOfBirth": {
-                  "year": 1981,
-                  "month": 10,
-                  "day": 24
-                },
-                "email": "john.smith@email.com"
-              },
-              "billingAddress": {
-                "nickName": "Home",
-                "street": "100 Queen",
-                "street2": "Unit 200",
-                "city": "Toronto",
-                "zip": "M5H 2N2",
-                "country": "CA",
-                "state": "ON"
-              },
-              "paymentMethod": "CARD",
-              "type": "SINGLE_USE",
-              "card": {
-                "holderName": "John Smith",
-                "cardNum": "4000000000000008",
-                "cardExpiry": {
-                  "month": "12",
-                  "year": "2018"
-                },
-                "cvv" : "123"
-              },
-              "merchantUrl": "https://www.paysafe.com",
-              "returnUrl": "https://www.paysafe.com"
-            }
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-              "id": "ph_TGFVRedfghy875redfghnED",
-              "amount": "100",
-              "currency": "CAD",
-              "customerIp": "172.0.0.1",
-              "action": "REDIRECT",
-              "status": "PENDING",
-              "timeToLiveSeconds":"899",
-              "customer": {
-                "firstName": "John",
-                "lastName": "Smith",
-                "dateOfBirth": {
-                  "year": 1981,
-                  "month": 10,
-                  "day": 24
-                },
-                "email": "john.smith@email.com"
-              },
-              "billingAddress": {
-                "nickName": "Home",
-                "street": "100 Queen",
-                "street2": "Unit 200",
-                "city": "Toronto",
-                "zip": "M5H 2N2",
-                "country": "CA",
-                "state": "ON"
-              },
-              "paymentMethod": "CARD",
-              "type": "SINGLE_USE",
-              "card": {
-                "holderName": "John Smith",
-                "last4Digits": "0008",
-                "cardExpiry": {
-                  "month": "12",
-                  "year": "2018"
-                }
-              },
-              "merchantUrl": "https://www.paysafe.com",
-              "links": 
-              {
-                 "type" : "REDIRECT",
-                 "url" : "https://pay.qa.netbanx.com/emulator/test_acs ",
-                 "method" : "GET"
-                },
-            "headers" : {
-                "Content-Type" : "application/x-www-form-urlencoded"
-             
-            },
-            "three_d_secure": {
-                "enrollmentStatus": "Y"
-              }
-            }
-            
 + Request Card payment handle creation without 3DS (application/json)
 
     + Headers
@@ -468,6 +365,115 @@ Creates a new Payment Handle object.
                 "enrollmentStatus": "N"
               }
             }
+
++ Request CARD Payment Handle with 3DS enabled (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+            
+    + Attributes (PaymentHandleRequest)
+    
+    
+    + Body
+
+            {
+              "amount": "100",
+              "currency": "CAD",
+              "customerIp": "172.0.0.1",
+              "customer": {
+                "firstName": "John",
+                "lastName": "Smith",
+                "dateOfBirth": {
+                  "year": 1981,
+                  "month": 10,
+                  "day": 24
+                },
+                "email": "john.smith@email.com"
+              },
+              "billingAddress": {
+                "nickName": "Home",
+                "street": "100 Queen",
+                "street2": "Unit 200",
+                "city": "Toronto",
+                "zip": "M5H 2N2",
+                "country": "CA",
+                "state": "ON"
+              },
+              "paymentMethod": "CARD",
+              "card": {
+                "holderName": "John Smith",
+                "cardNum": "4000000000000008",
+                "cardExpiry": {
+                  "month": "12",
+                  "year": "2018"
+                },
+                "cvv" : "123"
+              },
+              "links": [ 
+              {
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
+                }
+            ]
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "ph_TGFVRedfghy875redfghnED",
+              "amount": "100",
+              "currency": "CAD",
+              "customerIp": "172.0.0.1",
+              "action": "REDIRECT",
+              "status": "PENDING",
+              "timeToLiveSeconds":"899",
+              "customer": {
+                "firstName": "John",
+                "lastName": "Smith",
+                "dateOfBirth": {
+                  "year": 1981,
+                  "month": 10,
+                  "day": 24
+                },
+                "email": "john.smith@email.com"
+              },
+              "billingAddress": {
+                "nickName": "Home",
+                "street": "100 Queen",
+                "street2": "Unit 200",
+                "city": "Toronto",
+                "zip": "M5H 2N2",
+                "country": "CA",
+                "state": "ON"
+              },
+              "paymentMethod": "CARD",
+              "type": "SINGLE_USE",
+              "card": {
+                "holderName": "John Smith",
+                "last4Digits": "0008",
+                "cardExpiry": {
+                  "month": "12",
+                  "year": "2018"
+                }
+              },
+              "links": [ 
+              {
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
+                },
+              {
+                 "type" : "REDIRECT",
+                 "url" : "https://pay.qa.netbanx.com/emulator/test_acs",
+                 "method" : "GET"
+                }
+            ]
+            }
+            
             
 + Request Skrill Payment Handle creation (application/json)
 
@@ -2300,13 +2306,75 @@ Click on Get Original Credit Using Merchant Reference Number above to see how to
             }
 
 
-# Group Saved Cards APIs
 
-## Saved card [/v1/singleusecustomertokens]
+
+# Group Customer APIs
+
+## Create Customer [/v1/customers]
+
+### Create Customer Profile [POST]
+
++ Request (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+    
+    + Body
+
+            {
+                "firstName": "John",
+                "lastName": "Smith",
+                "phone" : "123-456-7890",
+                "dateOfBirth": {
+                    "year": 1981,
+                    "month": 10,
+                    "day": 24
+                },
+                "address": {
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON"
+                },
+                "email": "john.smith@email.com"
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "customerId": "Gt56fR6",
+                "firstName": "John",
+                "lastName": "Smith",
+                "phone" : "123-456-7890",
+                "dateOfBirth": {
+                    "year": 1981,
+                    "month": 10,
+                    "day": 24
+                },
+                "address": {
+                    "addressId": "DF45FDtrR",
+                    "nickName": "Home",
+                    "street": "100 Queen",
+                    "street2": "Unit 200",
+                    "city": "Toronto",
+                    "zip": "M5H 2N2",
+                    "country": "CA",
+                    "state": "ON"
+                },
+                "email": "john.smith@email.com"
+            }
+
+## Single User Customer Tokens [/v1/singleusecustomertokens]
 
 ### Create Single Use Customer Tokens [POST]
 
-Remember me 
+The API allows creation of single use customer token needed for cases where saved payment handles for a customer needs to be displayed in UI.
 
 + Request (application/json)
 
@@ -2372,13 +2440,16 @@ Remember me
              }]
             }
 
-### Get Saved Cards [GET /v1/singleusecustomertokens/{id}]
+### Get Saved Payment Handles using single use Customer Token Id [GET /v1/singleusecustomertokens/{id}]
 
-Click on Get Saved Cards above to see how to look up an Saved Cards using the ID returned in the response to the request.
+The operation allows look up of saved payment handles using a single use customer token. The payment handles are created with usage set to LOOKUP in a PENDING state.
+The payment handles returned can be converted into a single Use payment handle when a user clicks on the pay button and the flow continues as with a non-saved flow.
+
+Note: This API will be accessible with public API key. 
 
 + Parameter
 
-   + id : `86dcb68d-cbd0-4878-8da7-ffc0e6554513` - This is the ID returned in the response to the Saved cards. Example: 86dcb68d-cbd0-4878-8da7-ffc0e6554513.
+   + id : `86dcb68d-cbd0-4878-8da7-ffc0e6554513` 
 
 
 + Response 200 (application/json)
@@ -2413,7 +2484,7 @@ Click on Get Saved Cards above to see how to look up an Saved Cards using the ID
                 }
               ],
              "paymentHandles" : [
-               {
+              {
                 "id" : "52c54707-a536-4c3d-b2e9-ebdba8c1bd3e",
                 "timeToLiveSeconds" : "899",
                 "usage": "LOOKUP",
@@ -2429,89 +2500,4 @@ Click on Get Saved Cards above to see how to look up an Saved Cards using the ID
                 },
                 "billingAddressId": "6a275b7c-6f11-4ed1-ae77-21071724574a"
              }]
-            }
-
-# Group Customer APIs
-
-## Create Profile [/v1/customers]
-
-### Create Customer Profile [POST]
-
-+ Request (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-                "firstName": "John",
-                "lastName": "Smith",
-                "phone" : "123-456-7890",
-                "dateOfBirth": {
-                    "year": 1981,
-                    "month": 10,
-                    "day": 24
-                },
-                "address": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
-                },
-                "email": "john.smith@email.com"
-            }
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-                "customerId": "Gt56fR6",
-                "firstName": "John",
-                "lastName": "Smith",
-                "phone" : "123-456-7890",
-                "dateOfBirth": {
-                    "year": 1981,
-                    "month": 10,
-                    "day": 24
-                },
-                "address": {
-                    "addressId": "DF45FDtrR",
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
-                },
-                "email": "john.smith@email.com"
-            }
-
-## Modify Profile [/v1/customers/{customerId}]
-### Associate a Payment Handle to a Customer [PUT]
-
-+ Request (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-                "customerId": "Gt56fR6",
-                "paymentHandleId" : ""
-            }
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-            
             }
