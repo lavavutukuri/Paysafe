@@ -305,7 +305,6 @@ Creates a new Payment Handle object.
                     "state": "ON"
                 },
                 "paymentMethod": "CARD",
-                "type": "SINGLE_USE",
                 "card": {
                     "holderName": "John Smith",
                     "cardNum": "4111111111111119",
@@ -315,8 +314,13 @@ Creates a new Payment Handle object.
                     },
                     "cvv" : "123"   
                 },
-                "merchantUrl": "https://www.paysafe.com",
-                "returnUrl": "https://www.paysafe.com"
+                "links": [ 
+              {
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
+                }
+            ]
             }
 
 + Response 200 (application/json)
@@ -330,6 +334,7 @@ Creates a new Payment Handle object.
                 "action": "NONE",
                 "status": "PAYABLE",
                 "customerIp": "172.0.0.1",
+                "paymentHandleToken": "xfddsfshkhkhwqeq324",
                 "timeToLiveSeconds":"899",
                 "customer": {
                     "firstName": "John",
@@ -351,6 +356,7 @@ Creates a new Payment Handle object.
                     "state": "ON"
                 },
                 "paymentMethod": "CARD",
+                "savePaymentInstrument": "false", 
                 "type": "SINGLE_USE",
                 "card": {
                     "holderName": "John Smith",
@@ -360,10 +366,13 @@ Creates a new Payment Handle object.
                         "year": "2018"
                     }
                 },
-              "merchantUrl": "https://www.paysafe.com",
-              "three_d_secure": {
-                "enrollmentStatus": "N"
-              }
+                "links": [ 
+              {
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
+                }
+            ]          
             }
 
 + Request CARD Payment Handle with 3DS enabled (application/json)
@@ -382,15 +391,15 @@ Creates a new Payment Handle object.
               "currency": "CAD",
               "customerIp": "172.0.0.1",
               "customer": {
-                "firstName": "John",
-                "lastName": "Smith",
-                "dateOfBirth": {
-                  "year": 1981,
-                  "month": 10,
-                  "day": 24
+                    "firstName": "John",
+                    "lastName": "Smith",
+                    "dateOfBirth": {
+                        "year": 1981,
+                        "month": 10,
+                        "day": 24
+                    },
+                    "email": "john.smith@email.com"
                 },
-                "email": "john.smith@email.com"
-              },
               "billingAddress": {
                 "nickName": "Home",
                 "street": "100 Queen",
@@ -401,6 +410,7 @@ Creates a new Payment Handle object.
                 "state": "ON"
               },
               "paymentMethod": "CARD",
+              "savePaymentInstrument": "false",
               "card": {
                 "holderName": "John Smith",
                 "cardNum": "4000000000000008",
@@ -429,8 +439,9 @@ Creates a new Payment Handle object.
               "currency": "CAD",
               "customerIp": "172.0.0.1",
               "action": "REDIRECT",
-              "status": "PENDING",
+              "status": "INITIATED",
               "timeToLiveSeconds":"899",
+              "paymentHandleToken": "xfddsfshkhkhwqeq324",
               "customer": {
                 "firstName": "John",
                 "lastName": "Smith",
@@ -451,6 +462,7 @@ Creates a new Payment Handle object.
                 "state": "ON"
               },
               "paymentMethod": "CARD",
+              "savePaymentInstrument": "false",
               "type": "SINGLE_USE",
               "card": {
                 "holderName": "John Smith",
@@ -486,20 +498,9 @@ Creates a new Payment Handle object.
             {
                 "merchantRefNum":"123sdfsdfsdf",
                 "amount": "100",
-                "accountId": "123456789",
-                "storedCredential": {
-                     "type": "ADHOC",
-                     "occurance": "INITIAL"
-                },
-                "profile": {
+                "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
-                    "middleName": "sdfsd",
-                    "phone": "3245678",
-                    "gender": "MALE",
-                    "nationality": "INDIAN",
-                    "cellPhone": "1923218328",
-                    "locale": ""
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -515,12 +516,10 @@ Creates a new Payment Handle object.
                     "zip": "M5H 2N2",
                     "country": "CA",
                     "state": "ON",
-                    "phone": "345345435",
-                    "recipientName": ""
+                    "phone": "345345435"
                 },
                 "paymentType": "SKRILL",
                 "currency": "USD",
-                "returnUrl": "www.merchanturl.com",
                 "skrill": {
                     "consumerId": "john.doe@email.com",
                     "recipientDescription":"logo_url_alt_text",
@@ -528,7 +527,14 @@ Creates a new Payment Handle object.
                     "logoUrl":"http://www.paysafe.com/icon.jpg",
                     "detail1Description":"Details 1 description",
                     "detail1Text":"Details 1 text"
+                },
+                "links": [
+                 {
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
                 }
+                ]
             }
 
 + Response 200 (application/json)
@@ -537,28 +543,14 @@ Creates a new Payment Handle object.
 
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
-                "status": "PENDING",
-                "accountId": "123456789",
+                "status": "INITIATED",
                 "amount": "100",
-                "merchantRefNum": "12345",
+                "merchantRefNum":"123sdfsdfsdf",
+                "paymentHandleToken": "xfddsfshkhkhwqeq324",
                 "timeToLiveSeconds":"899",
-                "storedCredential": {
-                     "type": "ADHOC",
-                     "occurance": "INITIAL"
-                },
-                "profile": {
-                    "id": "12345",
-                    "status": "PAYABLE",
-                    "merchantCustomerId": "JSHDDS",
-                    "paymentToken": "HSAFDYSFD",
+                "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
-                    "middleName": "sdfsd",
-                    "phone": "3245678",
-                    "gender": "MALE",
-                    "nationality": "INDIAN",
-                    "cellPhone": "1923218328",
-                    "locale": "",
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -567,8 +559,6 @@ Creates a new Payment Handle object.
                     "email": "john.smith@email.com"
                 },
                 "billingAddress": {
-                    "id": "12345",
-                    "status": "PAYABLE",
                     "nickName": "Home",
                     "street": "100 Queen",
                     "street2": "Unit 200",
@@ -576,25 +566,24 @@ Creates a new Payment Handle object.
                     "zip": "M5H 2N2",
                     "country": "CA",
                     "state": "ON",
-                    "phone": "345345435",
-                    "recipientName": ""
+                    "phone": "345345435"
                 },
                 "paymentType": "SKRILL",
                 "usage": "SINGLE_USE",
                 "action": "REDIRECT",
                 "executionMode": "ASYNCHRONOUS",
-                "links": 
+                "links": [
+                 {
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
+                },
                  {
                  "type" : "REDIRECT",
                  "url" : "https://www.skrill.com",
                  "method" : "GET"
-                },
-                 "currency": "USD",
-                 "returnUrl": "www.merchanturl.com",
-                 "descriptor": "dsfdsg",
-                 "creationDate": "12-23-1323",
-                 "expirationDate": "12-23-3446",
-                 "paymentHandleToken": "AJSASGA",
+                }
+                ],
                 "skrill": {
                     "consumerId": "john.doe@email.com",
                     "recipientDescription":"logo_url_alt_text",
@@ -616,20 +605,9 @@ Creates a new Payment Handle object.
             {
                 "merchantRefNum":"123sdfsdfsdf",
                 "amount": "100",
-                "accountId": "123456789",
-                "storedCredential": {
-                     "type": "ADHOC",
-                     "occurance": "INITIAL"
-                },
-                "profile": {
+                "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
-                    "middleName": "sdfsd",
-                    "phone": "3245678",
-                    "gender": "MALE",
-                    "nationality": "INDIAN",
-                    "cellPhone": "1923218328",
-                    "locale": ""
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -645,12 +623,10 @@ Creates a new Payment Handle object.
                     "zip": "M5H 2N2",
                     "country": "CA",
                     "state": "ON",
-                    "phone": "345345435",
-                    "recipientName": ""
+                    "phone": "345345435"
                 },
                 "paymentType": "NETELLER",
                 "currency": "USD",
-                "returnUrl": "www.merchanturl.com",
                 "neteller": {
                     "consumerId":"neteller.account@example.org",
                     "consumerVerificationId":"123456",
@@ -659,7 +635,14 @@ Creates a new Payment Handle object.
                     "logoUrl":"http://www.paysafe.com/icon.jpg",
                     "detail1Description":"Details 1 description",
                     "detail1Text":"Details 1 text"
+                },
+                "links": [
+                {
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
                 }
+                ]
             }
 
 + Response 200 (application/json)
@@ -668,28 +651,13 @@ Creates a new Payment Handle object.
 
             {
                 "id": "ph_TGFVRedfghy875redfghn",
-                "status": "PENDING",
-                "accountId": "123456789",
+                "status": "INITIATED",
                 "amount": "100",
-                "merchantRefNum": "12345",
+                "merchantRefNum":"123sdfsdfsdf",
                 "timeToLiveSeconds":"899",
-                "storedCredential": {
-                     "type": "ADHOC",
-                     "occurance": "INITIAL"
-                },
-                "profile": {
-                    "id": "12345",
-                    "status": "PAYABLE",
-                    "merchantCustomerId": "JSHDDS",
-                    "paymentToken": "HSAFDYSFD",
+                "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
-                    "middleName": "sdfsd",
-                    "phone": "3245678",
-                    "gender": "MALE",
-                    "nationality": "INDIAN",
-                    "cellPhone": "1923218328",
-                    "locale": "",
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -707,24 +675,25 @@ Creates a new Payment Handle object.
                     "zip": "M5H 2N2",
                     "country": "CA",
                     "state": "ON",
-                    "phone": "345345435",
-                    "recipientName": ""
+                    "phone": "345345435"
                 },
                 "paymentType": "NETELLER",
                 "usage": "SINGLE_USE",
                 "action": "REDIRECT",
                 "executionMode": "SYNCHRONOUS",
-                "links": 
+                "links": [ 
                  {
                  "type" : "REDIRECT",
                  "url" : "https://www.neteller.com",
                  "method" : "GET"
                 },
+                {
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
+                }
+                ],
                  "currency": "USD",
-                 "returnUrl": "www.merchanturl.com",
-                 "descriptor": "dsfdsg",
-                 "creationDate": "12-23-1323",
-                 "expirationDate": "12-23-3446",
                  "paymentHandleToken": "AJSASGA",
                  "neteller": {
                     "consumerId":"neteller.account@example.org",
@@ -747,20 +716,9 @@ Creates a new Payment Handle object.
             {
                 "merchantRefNum":"123sdfsdfsdf",
                 "amount": "100",
-                "accountId": "123456789",
-                "storedCredential": {
-                     "type": "ADHOC",
-                     "occurance": "INITIAL"
-                },
-                "profile": {
+                "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
-                    "middleName": "sdfsd",
-                    "phone": "3245678",
-                    "gender": "MALE",
-                    "nationality": "INDIAN",
-                    "cellPhone": "1923218328",
-                    "locale": ""
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -776,19 +734,22 @@ Creates a new Payment Handle object.
                     "zip": "M5H 2N2",
                     "country": "CA",
                     "state": "ON",
-                    "phone": "345345435",
-                    "recipientName": ""
+                    "phone": "345345435"
                 },
                 "paymentType": "PAYSAFE_CARD",
                 "currency": "USD",
-                "returnUrl": "www.merchanturl.com",
                 "paysafecard": {
                     "consumerId": "merchantclientid",
                     "minAgeRestriction": 18,
                     "kycLevelRestriction": "SIMPLE",
                     "countryRestriction": "DE"
-                 
-                 }
+                 },
+                 "links": 
+                 [{
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
+                }]
             }
 
 + Response 200 (application/json)
@@ -797,28 +758,14 @@ Creates a new Payment Handle object.
 
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
-                "status": "PENDING",
-                "accountId": "123456789",
+                "status": "INITIATED",
                 "amount": "100",
-                "merchantRefNum": "12345",
+                "merchantRefNum":"123sdfsdfsdf",
+                "paymentHandleToken": "adsmgasgdqge726hd",
                 "timeToLiveSeconds":"899",
-                "storedCredential": {
-                     "type": "ADHOC",
-                     "occurance": "INITIAL"
-                },
-                "profile": {
-                    "id": "12345",
-                    "status": "PAYABLE",
-                    "merchantCustomerId": "JSHDDS",
-                    "paymentToken": "HSAFDYSFD",
+                "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
-                    "middleName": "sdfsd",
-                    "phone": "3245678",
-                    "gender": "MALE",
-                    "nationality": "INDIAN",
-                    "cellPhone": "1923218328",
-                    "locale": "",
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -827,8 +774,6 @@ Creates a new Payment Handle object.
                     "email": "john.smith@email.com"
                 },
                 "billingAddress": {
-                    "id": "12345",
-                    "status": "PAYABLE",
                     "nickName": "Home",
                     "street": "100 Queen",
                     "street2": "Unit 200",
@@ -836,32 +781,30 @@ Creates a new Payment Handle object.
                     "zip": "M5H 2N2",
                     "country": "CA",
                     "state": "ON",
-                    "phone": "345345435",
-                    "recipientName": ""
+                    "phone": "345345435"
                 },
                 "paymentType": "PAYSAFE_CARD",
                 "usage": "SINGLE_USE",
                 "action": "REDIRECT",
                 "executionMode": "ASYNCHRONOUS",
                 "links": 
-                 {
+                 [{
                  "type" : "REDIRECT",
                  "url" : "https://www.paysafecard.com",
                  "method" : "GET"
-                },
+                },{
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
+                }],
                  "currency": "USD",
-                 "returnUrl": "www.merchanturl.com",
-                 "descriptor": "dsfdsg",
-                 "creationDate": "12-23-1323",
-                 "expirationDate": "12-23-3446",
-                 "paymentHandleToken": "AJSASGA",
                 "paysafecard": {
                     "consumerId": "merchantclientid",
                     "minAgeRestriction": 18,
                     "kycLevelRestriction": "SIMPLE",
                     "countryRestriction": "DE"
                  
-                },
+                }
             }
             
 + Request PaysafeCash Payment Handle creation (application/json)
@@ -875,20 +818,9 @@ Creates a new Payment Handle object.
             {
                 "merchantRefNum":"123sdfsdfsdf",
                 "amount": "100",
-                "accountId": "123456789",
-                "storedCredential": {
-                     "type": "ADHOC",
-                     "occurance": "INITIAL"
-                },
-                "profile": {
+                "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
-                    "middleName": "sdfsd",
-                    "phone": "3245678",
-                    "gender": "MALE",
-                    "nationality": "INDIAN",
-                    "cellPhone": "1923218328",
-                    "locale": ""
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -904,19 +836,22 @@ Creates a new Payment Handle object.
                     "zip": "M5H 2N2",
                     "country": "CA",
                     "state": "ON",
-                    "phone": "345345435",
-                    "recipientName": ""
+                    "phone": "345345435"
                 },
                 "paymentType": "PAYSAFE_CASH",
                 "currency": "USD",
-                "returnUrl": "www.merchanturl.com",
                 "paysafecash": {
                     "consumerId": "merchantclientid",
                     "minAgeRestriction": 18,
                     "kycLevelRestriction": "SIMPLE",
                     "countryRestriction": "DE"
-                 
                 },
+                "links": 
+                 [{
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
+                }]
             }
 
 + Response 200 (application/json)
@@ -925,28 +860,14 @@ Creates a new Payment Handle object.
 
             {
                 "id": "ph_TGFVRedfghy875redfghnED",
-                "status": "PENDING",
-                "accountId": "123456789",
+                "status": "INITIATED",
                 "amount": "100",
-                "merchantRefNum": "12345",
+                "merchantRefNum":"123sdfsdfsdf",
                 "timeToLiveSeconds":"899",
-                "storedCredential": {
-                     "type": "ADHOC",
-                     "occurance": "INITIAL"
-                },
-                "profile": {
-                    "id": "12345",
-                    "status": "PAYABLE",
-                    "merchantCustomerId": "JSHDDS",
-                    "paymentToken": "HSAFDYSFD",
+                "paymentHandleToken": "HSAFDYSFD",
+                "customer": {
                     "firstName": "John",
                     "lastName": "Smith",
-                    "middleName": "sdfsd",
-                    "phone": "3245678",
-                    "gender": "MALE",
-                    "nationality": "INDIAN",
-                    "cellPhone": "1923218328",
-                    "locale": "",
                     "dateOfBirth": {
                         "year": 1981,
                         "month": 10,
@@ -955,8 +876,6 @@ Creates a new Payment Handle object.
                     "email": "john.smith@email.com"
                 },
                 "billingAddress": {
-                    "id": "12345",
-                    "status": "PAYABLE",
                     "nickName": "Home",
                     "street": "100 Queen",
                     "street2": "Unit 200",
@@ -964,8 +883,7 @@ Creates a new Payment Handle object.
                     "zip": "M5H 2N2",
                     "country": "CA",
                     "state": "ON",
-                    "phone": "345345435",
-                    "recipientName": ""
+                    "phone": "345345435"
                 },
                 "paymentType": "PAYSAFE_CASH",
                 "usage": "SINGLE_USE",
@@ -978,18 +896,22 @@ Creates a new Payment Handle object.
                  "method" : "GET"
                 },
                  "currency": "USD",
-                 "returnUrl": "www.merchanturl.com",
-                 "descriptor": "dsfdsg",
-                 "creationDate": "12-23-1323",
-                 "expirationDate": "12-23-3446",
-                 "paymentHandleToken": "AJSASGA",
                 "paysafecash": {
                     "consumerId": "merchantclientid",
                     "minAgeRestriction": 18,
                     "kycLevelRestriction": "SIMPLE",
                     "countryRestriction": "DE"
-                 
                 },
+                "links": 
+                 [{
+                 "type" : "REDIRECT",
+                 "url" : "https://www.paysafecash.com",
+                 "method" : "GET"
+                },{
+                 "type" : "RETURN_SUCCESS",
+                 "url" : "https://usgaminggamblig/payment/return/succuss",
+                 "method" : "GET"
+                }]
             }
             
 ### Fetch Payment Handle [GET /v1/paymenthandles/f343d2bd-f6a6-4a6d-9534-96c0abd97649]
@@ -1002,7 +924,6 @@ Fetch an existing payment handle object, using the unique payment handle ID retu
 
             {
                 "id": "f343d2bd-f6a6-4a6d-9534-96c0abd97649",
-                "masterMerchantId": "234",
                 "merchantRefNum": "13995817730005399",
                 "status": "INITIATED",
                 "usage": "SINGLE_USE",
@@ -1021,21 +942,13 @@ Fetch an existing payment handle object, using the unique payment handle ID retu
                 "type": "RETURN_SUCCESS",
                 "url": "http://merchant.com/success",
                  "method": "POST"
-            },
-            {
-                "type": "RETURN_FAILURE",
-                "url": "http://merchant.com/failure",
-                "method": "POST"
-             }
+            }
             ],
                 "customerIp": "10.10.12.64",
-                "savePaymentInstrument": false,
                 "merchantDescriptor": {
                 "dynamicDescriptor": "Casino slots payin"
              },
-                "fmaId": "card-processor-usd-003",
-                 "paymentHandleToken": "SCC54RTfi7x5sgjV",
-                "creationDate": 1540199745029,
+                "paymentHandleToken": "SCC54RTfi7x5sgjV",
                 "billingAddress": {
                     "street": "Wall Street",
                     "street2": "NYSE",
@@ -1044,12 +957,17 @@ Fetch an existing payment handle object, using the unique payment handle ID retu
                     "country": "US",
                     "zip": "12345"
             },
-                "card": {
-                    "paymentToken": "SCC54RTfi7x5sgjV"
+               "card": {
+                "holderName": "John Smith",
+                "last4Digits": "0008",
+                "cardExpiry": {
+                  "month": "12",
+                  "year": "2018"
                 }
+              }
             }
 
-### Fetch Payment Handle by Merchant Reference Number [GET /v1/paymenthandles?merchantRefNum=13995817730005389&masterMerchantId=234]
+### Fetch Payment Handle by Merchant Reference Number [GET /v1/paymenthandles?merchantRefNum=13995817730005389]
 
 Fetch an existing payment handle object, using the merchant genereated unique id used during payment handle creation request.
 
@@ -1059,7 +977,6 @@ Fetch an existing payment handle object, using the merchant genereated unique id
 
             {
                 "id": "f343d2bd-f6a6-4a6d-9534-96c0abd97649",
-                "masterMerchantId": "234",
                 "merchantRefNum": "13995817730005399",
                 "status": "INITIATED",
                 "usage": "SINGLE_USE",
@@ -1072,27 +989,19 @@ Fetch an existing payment handle object, using the merchant genereated unique id
                     {
                     "type": "REDIRECT",
                     "url": "http://test.paysafe.com",
-                    "method": "POST"
+                    "method": "GET"
                 },
                 {
                 "type": "RETURN_SUCCESS",
                 "url": "http://merchant.com/success",
-                 "method": "POST"
-            },
-            {
-                "type": "RETURN_FAILURE",
-                "url": "http://merchant.com/failure",
-                "method": "POST"
-             }
+                 "method": "GET"
+            }
             ],
                 "customerIp": "10.10.12.64",
-                "savePaymentInstrument": false,
                 "merchantDescriptor": {
                 "dynamicDescriptor": "Casino slots payin"
              },
-                "fmaId": "card-processor-usd-003",
-                 "paymentHandleToken": "SCC54RTfi7x5sgjV",
-                "creationDate": 1540199745029,
+                "paymentHandleToken": "SCC54RTfi7x5sgjV",
                 "billingAddress": {
                     "street": "Wall Street",
                     "street2": "NYSE",
@@ -1101,19 +1010,25 @@ Fetch an existing payment handle object, using the merchant genereated unique id
                     "country": "US",
                     "zip": "12345"
             },
-                "card": {
-                    "paymentToken": "SCC54RTfi7x5sgjV"
+               "card": {
+                "holderName": "John Smith",
+                "last4Digits": "0008",
+                "cardExpiry": {
+                  "month": "12",
+                  "year": "2018"
                 }
+              }
             }
 
 # Group Payment APIs
 
 ## Payments [/v1/payments]
 
-Payment API is used to mark the submission of a payment from the customer side. For credit and debit cards, it is equivalent to an authorization while in case of digital wallet transactions, it is used to mark successful transfer of money.
+Payments API is useful for Merchant to authenticate the initialization of payment, which is done using Payment Handle. 
+If Merchant doesn't authenticates the Payment Handle through the Payments API with in a timeline, the transaction will be cancelled.
 
 
-### Create Payment with handle Id [POST]
+### Create Payment with Payment Handle Token [POST]
 
 
 + Request Card Payment with Payment Handle (application/json)
@@ -1127,14 +1042,14 @@ Payment API is used to mark the submission of a payment from the customer side. 
     + Body
 
             {
-              "merchantRefNum": "merchant tokenization example-789",
+              "merchantRefNum": "463264632864832",
               "amount": 1295,
               "dupCheck": false,
               "settleWithAuth": false,
               "partialAuth": {
                 "requested": false
               },
-              "paymentHandleId": "ph_TGFVRedfghy875redfghnED",
+              "paymentHandleToken": "hjgds76432bjd",
               "customerIp": "204.91.0.12",
               "description": "Magazine subscription"
             }
@@ -1145,7 +1060,7 @@ Payment API is used to mark the submission of a payment from the customer side. 
 
             {
               "id": "14d380a4-e934-4cc8-b49e-a90cc082faa0",
-              "merchantRefNum": "merchant tokenization example-789",
+              "merchantRefNum": "463264632864832",
               "amount": 1295,
               "settleWithAuth": false,
               "dupCheck": false,
@@ -1154,14 +1069,15 @@ Payment API is used to mark the submission of a payment from the customer side. 
               },
               "availableToSettle": 1295,
               "description": "Magazine subscription",
-              "authCode": "1234567655",
+              "paymentHandleToken": "hjgds76432bjd",
               "paymentHandle": {
                 "id": "ph_TGFVRedfghy875redfghnED",
                 "amount": "1295",
-                "merchantRefNum": "merchant tokenization example-789",
+                "merchantRefNum": "84632642623",
                 "currency": "CAD",
                 "customerIp": "204.91.0.12",
-                "flow": "redirect",
+                "paymentHandleToken": "hjgds76432bjd",
+                "action": "REDIRECT",
                 "customer": {
                   "firstName": "John",
                   "lastName": "Smith",
@@ -1184,7 +1100,6 @@ Payment API is used to mark the submission of a payment from the customer side. 
                 "paymentMethod": "CARD",
                 "type": "SINGLE_USE",
                 "card": {
-                  "id": "paymentInstrumentId1",
                   "holderName": "John Smith",
                   "lastDigits": "1111",
                   "cardExpiry": {
@@ -1194,9 +1109,11 @@ Payment API is used to mark the submission of a payment from the customer side. 
                 }
               },
               "txnTime": "2014-12-14T15:12:18Z",
-              "currencyCode": "CAD",
-              "avsResponse": "MATCH",
-              "cvvVerification": "NOT_PROCESSED",
+              "gatewayResponse": {
+              "authCode": "1234567655",
+              "avsResponse": "NOT_MATCH",
+              "cvvVerification": "MATCHED"
+              },
               "status": "COMPLETED"
             }
 
@@ -1209,10 +1126,10 @@ Payment API is used to mark the submission of a payment from the customer side. 
     + Body
 
             {
-              "merchantRefNum": "merchant tokenization example-789",
+              "merchantRefNum": "2632686382638",
               "amount": 1295,
               "settleWithAuth": false,
-              "paymentHandleId": "LTEyMzYzMjQ3ODg",
+              "paymentHandleToken": "LTEyMzYzMjQ3ODg",
               "customerIp": "204.91.0.12",
               "description": "Magazine subscription"
             }
@@ -1223,10 +1140,10 @@ Payment API is used to mark the submission of a payment from the customer side. 
 
             {
               "id": "a02e52c7-c991-4418-966a-b62989cb0eae",
-              "merchantRefNum": "ORDER_ID:1231",
-              "amount": 10098,
+              "merchantRefNum": "2632686382638",
+              "amount": 1295,
               "customerIp": "192.0.126.111",
-              "paymentHandleId": "LTEyMzYzMjQ3ODg",
+              "paymentHandleToken": "LTEyMzYzMjQ3ODg",
               "skrill": {
                 "mandateReference": "1000-3232659874-65985698",
                 "accountHolderName": "XYZ Company",
