@@ -70,7 +70,51 @@ The following payment methods are supported
 + accordD.gracePeriod : `length <=99` - This is the grace period, in months, associated with deferred payment transactions.
 + accordD.term : `length <=99` -This is the number of payments, in months, for equal payment transactions.
 
+## recipientAttributes (object)
++ recipient.dateOfBirth (object) - This is the date of birth of the recipient.
+    + dateOfBirth.day(number) - This is the day of the dateOfBirth.
+    + dateOfBirth.month(number) - This is the month of the dateOfBirth.
+    + dateOfBirth.year(number) - This is the year of the dateOfBirth.
++ recipient.zip - This is the ZIP Code of the recipient.
++ recipient.lastName - This is the last name of the recipient.
++ recipient.accountNumber - This is the account number of the recipient.
 
+## splitpayAttributes (object)
++ linkedAccount -This is the ID of the linked account.
++ amount (number) -This is the amount to transfer to the linked account in minor currency units.
++ percent(number) -This is the percentage of the total transaction amount to transfer to that account.
+
+## storedCredentialDetailsAttributes (object)
++ type (enum) - This specifies the type of request being made. Possible values are: 
+    + ADHOC – Ad hoc consumer-initiated request.
+    + TOPUP – Unscheduled merchant iniitated request when a consumer balance is below a set limit.
+    + RECURRING –  Scheduled merchant initiated recurring request.
++ occurrence (enum) - This specifies whether this stored credential request is initial or recurring. Possible values are: 
+    + INITIAL – Used when this is the first time the consumer uses this credit card.
+    + SUBSEQUENT – Used when the consumer uses this credit card for subsquent requests.
+
+## merchantDescriptorAttributes (object)
++ merchantDescriptor.dynamicDescriptor: `length = 20` - This is a merchant descriptor that will be displayed on a customer’s card statement.
++ merchantDescriptor.phone: `length = 13` - This is the merchant’s phone number, which will be appended to the merchant descriptor on a customer’s card statement.
+
+## acquirerDataAttributes (object)
++ acquirerData.code - This is the code of the acquirer data. Possible values are:
+        + CRX (Credorax)
++ acquirerData.authId - This is the auth idof the acquirer data.
++ acquirerData.externalSubMerchantId - This is the external merchant id of the acquirer data.
+
+## errorAttributes (object)
++ error.code -This is the error code.
++ error.internalCode -This is the internal error code.
++ error.message -This is the description of the error.
++ error.riskReasonCode -if applicable The corresponding reason code from the risk system
++ error.details(array) -if applicable This is a collection of detailed description.
++ error.fieldErrors(array) - if applicable This is a list of fields that have issues.
+    + field -Field name.
+    + error -Error associated with the field name.
++ error.links (array) - if applicable This is a list of links to the related resource
+    + rel - Description or relation of the link. Eg: default, self, first, prev, next, last
+    + href - The actual URL of the link
 
 ## PaymentHandleRequest (object)
 
@@ -218,6 +262,20 @@ Using a card number – An authorization request that uses a credit card number 
 + gatewayResponse(gatewayRequest) - This is the raw response returned by an acquirer. It is returned only if your account is configured accordingly.
 + accorD(accordDRequest) - These are parameters for financing plans supported for certain merchant configurations.
         Include this element only when instructed to do so by NETBANX.
++ recipient(recipientAttributes) - This is recipient information.
++ riskReasonCode (array) - An array of integers is returned, displaying the detailed risk reason codes if your transaction was declined. It is returned only if your account is configured accordingly.
++ splitPay (splitpayAttributes) - NOTE: For splitpay transactions only.
+        An array containing the linked accounts and the amount shared with each. You must include either amount or percent. However, you cannot include both values.
++ storedCredential(storedCredentialDetailsAttributes) - The storedCredential object is used to identify authorization requests that use stored credentials for a consumer, in order to improve authorization rates and reduce fraud. Stored credentials can be used in two cases:
+Using a payment token – An authorization request that uses a paymentToken from the Customer Vault API.           
+Using a card number – An authorization request that uses a credit card number stored by the merchant
++ merchantDescriptor(merchantDescriptorAttributes) - This is the merchant descriptor that will be displayed on the customer's card statement.
+        Not all processing gateways support this parameter. Contact your account manager for more information.
++ settlements (array) - This is the list of all settlements. This will be returned only if settleWithAuth=true in the request.
++ acquirerData(acquirerDataAttributes) - This is additional information about the card acquirer required when you are performing an original credit request.
+        This object is required only when you are using Credorax (CRX) as your acquirer for Original Credits. Contact your account manager for details.
++ error(errorAttributes) - Details of the error.
+
 
 ## OriginalCreditResponse (object)
 + id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
