@@ -114,7 +114,28 @@ The following payment methods are supported
     + error -Error associated with the field name.
 + error.links (array) - if applicable This is a list of links to the related resource
     + rel - Description or relation of the link. Eg: default, self, first, prev, next, last
-    + href - The actual URL of the link
+    + href - The actual URL of the link.
+
+## metadataAttributes (object)
++ key : `length = 50` -This is a description of the data being added to the order.
++ value : `length = 100` - This is the value for the key/value pair.
+
+## authenticationAttributes (object)
++ authentication.id -This is the id of authentication.
++ authentication.eci -This is the eci of authentication.
++ authentication.cavv -This is the cavv of authentication.
++ authentication.xid -This is the xid of authentication.
++ authentication.status -This is the status of authentication.
++ authentication.merchantRefNum -This is the merchantRefNumof authentication.
++ authentication.threeDEnrollment -This is the threeDEnrollmentof authentication.
++ authentication.threeDResult -This is the threeDResultof authentication.
++ authentication.signatureStatus -This is the signatureStatus of authentication.
++ authentication.error (object) -This is the error details of authentication.
+    + code -This is the error code.
+    + message -This is the description of the error.
+    + fieldErrors (object) -This is a list of fields that have issues.
+    + field -Field name.
+    + error -Error associated with the field name.
 
 ## PaymentHandleRequest (object)
 
@@ -275,6 +296,10 @@ Using a card number – An authorization request that uses a credit card number 
 + acquirerData(acquirerDataAttributes) - This is additional information about the card acquirer required when you are performing an original credit request.
         This object is required only when you are using Credorax (CRX) as your acquirer for Original Credits. Contact your account manager for details.
 + error(errorAttributes) - Details of the error.
++ metadata(metadataAttributes) - This allows the merchant to specify additional data (e.g., affiliate codes, session IDs, etc.) to be stored against the transaction and returned to in status calls, reports, etc.
+        Up to 10 metadata key/value pairs are enabled per order. They do not need to be defined in advance and can be different on each transaction.
++ statusReason - This is reason for the status. This is present in case of ERROR, FAILURE, HELD status.
++ authentication(authenticationAttributes) - This is the 3DS authentication details.
 
 
 ## OriginalCreditResponse (object)
