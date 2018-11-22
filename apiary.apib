@@ -22,6 +22,56 @@ The following payment methods are supported
 
 # Data Structures
 
+## level2Level3Request (object)
++ level2Level3.exemptLocalTax (boolean)
++ level2Level3.localTaxAmount (number) : `length <=99999999999`  - This is the local sales tax applied to the purchase. 
++ level2Level3.nationalTaxAmount  : `length <=99999999999` - This is the national tax included in the transaction amount.
++ level2Level3.freightAmount (number) : `length <=99999999999` - This is the freight or shipping portion of the total transaction amount.
++ level2Level3.dutyAmount (number) : `length <=99999999999` - This is the duty associated with the import of the purchased goods.
++ level2Level3.destinationZip : `length <=10` - This is the postal/zip code of the address to which the purchased goods will be delivered. This field can be identical to the shipFromZip if the customer is present and takes immediate possession of the goods.
++ level2Level3.destinationCountry : `Size = 2` - This is the country to which the goods are being shipped. See Country Codes.
++ level2Level3.shipFromZip : `length <=10` - This is the postal/zip code of the address from which the purchased goods are being shipped
++ level2Level3.lineItems (array) - This is more detailed information about the items that are being purchased.
+    + lineItems.description : `length <=50` - This is a description of the item(s) being purchased.
+    + lineItems.productCode : `length <=12` - This is a merchant-defined description code of the item being purchased.
+    + lineItems.quantity  : `length =99999999999` - This is the quantity of the item.
+    + lineItems.unitAmount : 'length = 100' - This is the tax rate used to calculate the tax amount. For example, if the tax rate is 10.5%, this value should be 10.5.
+    + lineItems.taxAmount : `length =99999999999` - This is the amount of any value-added taxes that can be associated with the purchased item, in minor units. The currency will be based on the account setting.Our system will not validate the accuracy of this value. The merchant's application must calculate this value correctly.
+    + lineItems.totalAmount : `length =99999999999` - This is the total amount of the line item, typically calculated as price multiplied by quantity, in minor units. The currency will be based on the account setting. Our system will not validate the accuracy of this value. The merchant's application must calculate this value correctly.
+
+## gatewayRequest (object)
++ code -This is acquirer identification code, such as DJN, CRX, etc.
++ responseCode -This is the raw response returned by the acquirer.
++ avsCode -This is the raw AVS code returned by the acquirer.
++ balanceResponse -This is the balance remaining on a gift card, if a gift card was used for the original transaction.
++ mid -This is the acquirer MID that was sent to the clearing house.
++ terminalId -This is the merchant's terminal ID.
++ batchNumber -This is the batch number.
++ seqNumber -This is the merchant's sequence number.
++ effectiveDate -This is the date of the bank deposit associated with the transaction. 
++ financingType -This is the type of financing offered.
++ plan -This is the plan number for this financing transaction.
++ gracePeriod -This is the grace period, in months, associated with deferred payment transactions.
++ term - This is the number of payments, in months, for equal payment transactions.
++ responseId -This is the response ID assigned by Credorax.
++ requestId -This is the request ID assigned by NETBANX.
++ description -This is a description of the response.
++ authCode -This is the authorization code.
++ txnDateTime -This is the transaction date and time.
++ referenceNbr -Bank net transaction Id/Merch Tran Ref
++ responseReasonCode -This is the raw response reason code returned by Credorax.
++ cvv2Result -This is the raw cvv2 result code.
+
+## accordDRequest (object)
++ accordD.finanacingType(enum) - This is the type of financing offered.
+    + DEFERRED_PAYMENT – Deferred payment financing
+    + EQUAL_PAYMENT – Equal payment financing
++ accordD.plan : `length <=3` - This is the plan number for this financing transaction.
++ accordD.gracePeriod : `length <=99` - This is the grace period, in months, associated with deferred payment transactions.
++ accordD.term : `length <=99` -This is the number of payments, in months, for equal payment transactions.
+
+
+
 ## PaymentHandleRequest (object)
 
 +  id: `length <=36`(required) - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Payments.
@@ -119,6 +169,56 @@ Using a card number – An authorization request that uses a credit card number 
 + paymentHandleIdFrom - This is the existing payment handle id, from which payment instrument and profile details has to be fetched. We can only use Payment handles whose usage is set to LOOKUP for this. length<=36
 + timeToLiveSeconds: 1212121212 (number) - This is the period of time the single-use token is valid before expiration, in seconds, returned in the response.(Long)
 
+
+
+## PaymentsRequest (object)
+
++  id: `length <=36` read only - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Settlements.
++ merchantRefNum: `length <= 255`(required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
++ amount: 100 - Max =99999999999(required)  This is the amount of the request, in minor units.
++ dupCheck: true (boolean) - This validates that this request is not a duplicate. A request is considered a duplicate if the merchantRefNum has already been used in a previous request within the past 90 days.
++ settleWithAuth: true (boolean) - This indicates whether the request is an Authorization only (no Settlement), or a Purchase (Authorization and Settlement).
+        - false - the request is not settled
+        - true  - the request is settled
++ preAuth: false  (boolean) - This indicates whether the Authorization request should be sent as a Pre-Authorization.
+        - You should use the preAuth element in cases where you are not sure that you can fully settle the Authorization within 4 days. Contact your account manager for more information.
++ partialAuth (object)  -This is the authorization that is approved for an amount lower than the requested amount. The reminder of the amount could be paid by other means.     
+    + partialAuth.requested (boolean) -This specifies whether partial auth is requested or not.
+    + partialAuth.amountDue (number) -This is the amount for which auth is not provided.
+    + partialAuth.orginalAmount (number) -This is the actual amount for which authorization is asked.
++ paymentHandleToken (string) - This is the payment handle token.
++ paymentHandle (PaymentHandleRequest) - This is the Payment Handle details.
++ authCode : `length <= 50` - This is the Authorization code assigned by the issuing bank and returned in the response.
++ availableToSettle (number) -This is the amount of of the Authorization remaining to settle, in minor units.
++ childAccountNum : `length <= 10` -This is the child merchant account number. It is returned only if the transaction was processed via a master account.
++ customerIp - `length<=39` -This is the customer's IP address.
++ description: `length<=255` -This is a description of the transaction, provided by the merchant.
++ status (enum) - This is the status of the transaction request.
+    + RECEIVED - Our system has received the request and is waiting for the downstream processor’s response. 
+    + COMPLETED - The transaction has been completed.
+    + HELD - The transaction has been placed on hold due to risk considerations.
+    + PENDING - The authorization request is pending.
+    + FAILED - The transaction failed, due to either an error or being declined. 
+    + CANCELLED - The authorization request has been fully reversed.
++ currencyCode: CAD - Max = 3 This is the currency of the merchant account, e.g., USD or CAD, returned in the request response.
++ avsResponse (enum) - This is the AVS response from the card issuer.
+    + MATCH
+    + MATCH_ADDRESS_ONLY
+    + MATCH_ZIP_ONLY
+    + NO_MATCH
+    + NOT_PROCESSED
+    + UNKNOWN
++ cvvVerification (enum) - This is the response to the cvv submitted with the transaction request.
+    + MATCH
+    + NO_MATCH
+    + NOT_PROCESSED
+    + UNKNOWN
++ level2Level3(level2Level3Request) - This allows merchants who are enabled to provide additional L2/L3 transaction data.
+        Not all processing gateways support this parameter. Contact your account manager for more information.
++ gatewayResponse(gatewayRequest) - This is the raw response returned by an acquirer. It is returned only if your account is configured accordingly.
++ accorD(accordDRequest) - These are parameters for financing plans supported for certain merchant configurations.
+        Include this element only when instructed to do so by NETBANX.
+
 ## OriginalCreditResponse (object)
 + id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
 + merchantRefNum: P1234 (required) - length<=255 This is the merchant reference number created by the merchant and submitted as part of the request.
@@ -159,11 +259,12 @@ Using a card number – An authorization request that uses a credit card number 
 + customerIp: 204.91.0.12 -This is the customer's IP address.length<=39
 + accountId: 123456789 (optional) -This is the merchant account number.
 + status (enum) - This is the status of the transaction request.
-    + RECEIVED 
-    + COMPLETED 
-    + PENDING 
-    + FAILED 
-    + CANCELLED
+    + RECEIVED - Our system has received the request and is waiting for the downstream processor’s response. 
+    + COMPLETED - The transaction has been completed.
+    + HELD - The transaction has been placed on hold due to risk considerations.
+    + PENDING - The authorization request is pending.
+    + FAILED - The transaction failed, due to either an error or being declined. 
+    + CANCELLED - The authorization request has been fully reversed.
 
 ## SettlementResponse (object)
 + id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
@@ -174,11 +275,12 @@ Using a card number – An authorization request that uses a credit card number 
 + customerIp: 204.91.0.12 -This is the customer's IP address.length<=39
 + accountId: 123456789 (optional) -This is the merchant account number.
 + status (enum) - This is the status of the transaction request.
-    + RECEIVED 
-    + COMPLETED 
-    + PENDING 
-    + FAILED 
-    + CANCELLED    
+    + RECEIVED - Our system has received the request and is waiting for the downstream processor’s response. 
+    + COMPLETED - The transaction has been completed.
+    + HELD - The transaction has been placed on hold due to risk considerations.
+    + PENDING - The authorization request is pending.
+    + FAILED - The transaction failed, due to either an error or being declined. 
+    + CANCELLED - The authorization request has been fully reversed.  
 + availableToRefund: 25 - This is the amount of of the Authorization remaining to Refund, in minor units.Read Only, max=99999999999
 
 # Group Metadata APIs
@@ -1024,11 +1126,16 @@ Fetch an existing payment handle object, using the merchant genereated unique id
 
 ## Payments [/v1/payments]
 
-Payments API is useful for Merchant to authenticate the initialization of payment, which is done using Payment Handle. 
-If Merchant doesn't authenticates the Payment Handle through the Payments API with in a timeline, the transaction will be cancelled.
+Payments is used to authorize an amount. The authorized amount must be settled in a subsequent settlement transaction.
+For Purchase requests. i.e., requests which authorizes and settles in the same request, set the settleWithAuth  parameter to true.
 
 
 ### Create Payment with Payment Handle Token [POST]
+
+- An Payment request that will have to be settled later
+- A purchase request, which authorizes and settles the payment in a single request by setting the settleWithAuth parameter to true
+- An Payment request using a payment token
+- An Payment including 3D Secure authentication data
 
 
 + Request Card Payment with Payment Handle (application/json)
@@ -1037,21 +1144,80 @@ If Merchant doesn't authenticates the Payment Handle through the Payments API wi
 
             Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
             
-
+    + Attributes (PaymentsRequest)
     
     + Body
 
             {
-              "merchantRefNum": "463264632864832",
-              "amount": 1295,
-              "dupCheck": false,
-              "settleWithAuth": false,
-              "partialAuth": {
-                "requested": false
+              "merchantRefNum": "merchantRef-1234",
+              "amount": "100",
+              "currency": "USD",
+              "dupCheck": true,
+              "paymentHandleToken": "sc_afsdsfsdfs",
+              "settleWithAuth": "false",
+              "preAuth": "false",
+              "level2Level3": {
+                "localTaxAmount": 15,
+                "nationalTaxAmount": 0,
+                "freightAmount": 0,
+                "dutyAmount": 0,
+                "destinationZip": "90210",
+                "destinationCountry": "US",
+                "shipFromZip": "90210",
+                "lineItems": [
+                  {
+                    "description": "Disney Cruise Line - Adult",
+                    "productCode": "DCL-A",
+                    "quantity": 2,
+                    "unitAmount": 120000,
+                    "taxRate": 5,
+                    "taxAmount": 12000,
+                    "totalAmount": 252000
+                  },
+                  {
+                    "description": "Disney Cruise Line - Kids",
+                    "productCode": "DCL-K",
+                    "quantity": 1,
+                    "unitAmount": 60000,
+                    "taxRate": 5,
+                    "taxAmount": 3000,
+                    "totalAmount": 63000
+                  }
+                ]
               },
-              "paymentHandleToken": "hjgds76432bjd",
+              "storedCredential": {
+                "type": "RECURRING",
+                "occurrence": "SUBSEQUENT"
+              },
+              "accordD": {
+                "financingType": "DEFERRED_PAYMENT",
+                "plan": "123",
+                "gracePeriod": "12"
+              },
+              "recipient": {
+                "dateOfBirth": {
+                  "day": 29,
+                  "month": 1,
+                  "year": 2001
+                },
+                "zip": "CB24 9AD",
+                "lastName": "Smith",
+                "accountNumber": "ABC1234567890"
+              },
+              "splitpay": [
+                {
+                  "linkedAccount": "123124124",
+                  "percent": 5
+                },
+                {
+                  "linkedAccount": "767862873",
+                  "amount": 500
+                }
+              ],
               "customerIp": "204.91.0.12",
-              "description": "Magazine subscription"
+              "metadata": {
+                "key1": "value1"
+              }
             }
             
 + Response 200 (application/json)
@@ -1059,62 +1225,109 @@ If Merchant doesn't authenticates the Payment Handle through the Payments API wi
     + Body
 
             {
-              "id": "14d380a4-e934-4cc8-b49e-a90cc082faa0",
-              "merchantRefNum": "463264632864832",
-              "amount": 1295,
-              "settleWithAuth": false,
-              "dupCheck": false,
-              "partialAuth": {
-                "requested": false
-              },
-              "availableToSettle": 1295,
-              "description": "Magazine subscription",
-              "paymentHandleToken": "hjgds76432bjd",
+              "id": "a4f649d7-68e8-4b7d-bede-cf8f1f6f66f3",
+              "merchantRefNum": "merchantRef-1234",
+              "amount": "100",
+              "currency": "USD",
+              "dupCheck": true,
+              "paymentHandleToken": "sc_afsdsfsdfs",
               "paymentHandle": {
-                "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "1295",
-                "merchantRefNum": "84632642623",
-                "currency": "CAD",
-                "customerIp": "204.91.0.12",
-                "paymentHandleToken": "hjgds76432bjd",
-                "action": "REDIRECT",
-                "customer": {
-                  "firstName": "John",
-                  "lastName": "Smith",
-                  "dateOfBirth": {
-                    "year": 1981,
-                    "month": 10,
-                    "day": 24
+                "id": "49d7a4f6-68q8-4bsd-1234-6f66f3cf8f1f"
+              },
+              "settleWithAuth": "false",
+              "preAuth": "false",
+              "level2Level3": {
+                "localTaxAmount": 15,
+                "nationalTaxAmount": 0,
+                "freightAmount": 0,
+                "dutyAmount": 0,
+                "destinationZip": "90210",
+                "destinationCountry": "US",
+                "shipFromZip": "90210",
+                "lineItems": [
+                  {
+                    "description": "Disney Cruise Line - Adult",
+                    "productCode": "DCL-A",
+                    "quantity": 2,
+                    "unitAmount": 120000,
+                    "taxRate": 5,
+                    "taxAmount": 12000,
+                    "totalAmount": 252000
                   },
-                  "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                  "nickName": "Home",
-                  "street": "100 Queen",
-                  "street2": "Unit 200",
-                  "city": "Toronto",
-                  "zip": "M5H 2N2",
-                  "country": "CA",
-                  "state": "ON"
-                },
-                "paymentMethod": "CARD",
-                "type": "SINGLE_USE",
-                "card": {
-                  "holderName": "John Smith",
-                  "lastDigits": "1111",
-                  "cardExpiry": {
-                    "month": "12",
-                    "year": "2020"
+                  {
+                    "description": "Disney Cruise Line - Kids",
+                    "productCode": "DCL-K",
+                    "quantity": 1,
+                    "unitAmount": 60000,
+                    "taxRate": 5,
+                    "taxAmount": 3000,
+                    "totalAmount": 63000
                   }
+                ]
+              },
+              "storedCredential": {
+                "type": "RECURRING",
+                "occurrence": "SUBSEQUENT"
+              },
+              "accordD": {
+                "financingType": "DEFERRED_PAYMENT",
+                "plan": "123",
+                "gracePeriod": "12"
+              },
+              "recipient": {
+                "dateOfBirth": {
+                  "day": 29,
+                  "month": 1,
+                  "year": 2001
+                },
+                "zip": "CB24 9AD",
+                "lastName": "Smith",
+                "accountNumber": "ABC1234567890"
+              },
+              "splitpay": [
+                {
+                  "linkedAccount": "123124124",
+                  "percent": 5
+                },
+                {
+                  "linkedAccount": "767862873",
+                  "amount": 500
                 }
+              ],
+              "customerIp": "204.91.0.12",
+              "metadata": {
+                "key1": "value1"
               },
-              "txnTime": "2014-12-14T15:12:18Z",
+              "status": "COMPLETED",
+              "statusReason": "USER_CANCELLED",
+              "riskReasonCodes": [
+                "1",
+                "2"
+              ],
+              "txnTime": "2018-10-24T15:12:18Z",
+              "authentication": {
+                "eci": 5,
+                "cavv": "AAABCIEjYgAAAAAAlCNiENiWiV+=",
+                "xid": "OU9rcTRCY1VJTFlDWTFESXFtTHU=",
+                "threeDEnrollment": "Y",
+                "threeDResult": "Y",
+                "signatureStatus": "Y"
+              },
+              "avsResponse": "MATCH",
+              "cvvVerification": "MATCH",
               "gatewayResponse": {
-              "authCode": "1234567655",
-              "avsResponse": "NOT_MATCH",
-              "cvvVerification": "MATCHED"
-              },
-              "status": "COMPLETED"
+                "authCode": "026189",
+                "code": "CRX",
+                "responseCode": "0",
+                "avsCode": "M",
+                "responseId": "625996",
+                "requestId": "2263",
+                "referenceNbr": "315312161910",
+                "description": "Transaction has been executed successfully",
+                "txnDateTime": "11/11/2013 at 12:16:19 EST",
+                "responseReasonCode": "00",
+                "cvv2Result": "M"
+              }
             }
 
 + Request Payment with Skrill Payment Handle (application/json)
@@ -1271,136 +1484,78 @@ Click on Get Payments above to see how to fetch the payments by payment_id.
 
 + Parameter
 
-   + payment_id (String) - 86dcb68d-cbd0-4878-8da7-ffc0e6554513
+   + payment_id : `c64ecbf2-a942-4f7c-b412-70217a0eb16e` - This is the ID returned in the response to the Payments request.
 
 + Response 200 (application/json)
 
     + Body
 
             {
-              "id": "14d380a4-e934-4cc8-b49e-a90cc082faa0",
-              "merchantRefNum": "merchant tokenization example-789",
-              "amount": 1295,
-              "settleWithAuth": false,
-              "dupCheck": false,
-              "partialAuth": {
-                "requested": false
-              },
-              "availableToSettle": 1295,
-              "description": "Magazine subscription",
-              "authCode": "1234567655",
-              "paymentHandle": {
-                "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "1295",
-                "merchantRefNum": "merchant tokenization example-789",
-                "currency": "CAD",
-                "customerIp": "204.91.0.12",
-                "flow": "redirect",
-                "customer": {
-                  "firstName": "John",
-                  "lastName": "Smith",
-                  "dateOfBirth": {
-                    "year": 1981,
-                    "month": 10,
-                    "day": 24
-                  },
-                  "email": "john.smith@email.com"
+                "id": "c64ecbf2-a942-4f7c-b412-70217a0eb16e",
+                "amount": 1000,
+                "preAuth": false,
+                "merchantRefNum": "13995817730001164",
+                "settleWithAuth": false,
+                "paymentHandleToken": "SCmurWfvK755aLkh",
+                "paymentHandle": {
+                    "id": "86ad8859-11d2-477d-80f2-5996a1eed4a8",
+                    "merchantRefNum": "13995817730001164",
+                    "status": "COMPLETED",
+                    "accountId": "1004940890",
+                    "savePaymentInstrument": false,
+                    "paymentHandleToken": "SCmurWfvK755aLkh"
                 },
-                "billingAddress": {
-                  "nickName": "Home",
-                  "street": "100 Queen",
-                  "street2": "Unit 200",
-                  "city": "Toronto",
-                  "zip": "M5H 2N2",
-                  "country": "CA",
-                  "state": "ON"
-                },
-                "paymentMethod": "CARD",
-                "type": "SINGLE_USE",
-                "card": {
-                  "id": "paymentInstrumentId1",
-                  "holderName": "John Smith",
-                  "lastDigits": "1111",
-                  "cardExpiry": {
-                    "month": "12",
-                    "year": "2020"
-                  }
-                }
-              },
-              "txnTime": "2014-12-14T15:12:18Z",
-              "currencyCode": "CAD",
-              "avsResponse": "MATCH",
-              "cvvVerification": "NOT_PROCESSED",
-              "status": "COMPLETED"
+                "authCode": "102301",
+                "txnTime": 1542705957000,
+                "customerIp": "10.10.12.64",
+                "description": "Magazine subscription",
+                "currencyCode": "USD",
+                "status": "COMPLETED",
+                "avsResponse": "MATCH_ADDRESS_ONLY",
+                "cvvVerification": "MATCH",
+                "availableToSettle": 0
             }
             
-### Get Payments by Merchant Reference number [GET /v1/payments?merchantRefNum={merchantRefNum_id}]
+### Get Payments by Merchant Reference number [GET /v1/payments?merchantRefNum={merchant_ref_num}]
 
 Click on above to fetch the payments by merchant refernce number.
 
 + Parameter
 
-   + merchantRefNum_id : merchant tokenization example-789
+   + merchant_ref_num : `13995817730001164` -This is the merchant reference number created by the merchant and submitted as part of the request.
 
 + Response 200 (application/json)
 
     + Body
 
             {
-              "id": "14d380a4-e934-4cc8-b49e-a90cc082faa0",
-              "merchantRefNum": "merchant tokenization example-789",
-              "amount": 1295,
-              "settleWithAuth": false,
-              "dupCheck": false,
-              "partialAuth": {
-                "requested": false
-              },
-              "availableToSettle": 1295,
-              "description": "Magazine subscription",
-              "authCode": "1234567655",
-              "paymentHandle": {
-                "id": "ph_TGFVRedfghy875redfghnED",
-                "amount": "1295",
-                "merchantRefNum": "merchant tokenization example-789",
-                "currency": "CAD",
-                "customerIp": "204.91.0.12",
-                "flow": "redirect",
-                "customer": {
-                  "firstName": "John",
-                  "lastName": "Smith",
-                  "dateOfBirth": {
-                    "year": 1981,
-                    "month": 10,
-                    "day": 24
-                  },
-                  "email": "john.smith@email.com"
-                },
-                "billingAddress": {
-                  "nickName": "Home",
-                  "street": "100 Queen",
-                  "street2": "Unit 200",
-                  "city": "Toronto",
-                  "zip": "M5H 2N2",
-                  "country": "CA",
-                  "state": "ON"
-                },
-                "paymentMethod": "CARD",
-                "type": "SINGLE_USE",
-                "card": {
-                  "id": "paymentInstrumentId1",
-                  "holderName": "John Smith",
-                  "lastDigits": "1111",
-                  "cardExpiry": {
-                    "month": "12",
-                    "year": "2020"
-                  }
-                }
-              },
-              "txnTime": "2014-12-14T15:12:18Z",
-              "currencyCode": "CAD",
-              "avsResponse": "MATCH",
-              "cvvVerification": "NOT_PROCESSED",
-              "status": "COMPLETED"
+                "payments": [
+                    {
+                    "id": "c64ecbf2-a942-4f7c-b412-70217a0eb16e",
+                    "amount": 1000,
+                    "preAuth": false,
+                    "merchantRefNum": "13995817730001164",
+                    "settleWithAuth": false,
+                    "paymentHandleToken": "SCmurWfvK755aLkh",
+                    "paymentHandle": {
+                        "id": "86ad8859-11d2-477d-80f2-5996a1eed4a8",
+                        "merchantRefNum": "13995817730001164",
+                        "status": "COMPLETED",
+                        "accountId": "1004940890",
+                        "savePaymentInstrument": false,
+                        "paymentHandleToken": "SCmurWfvK755aLkh"
+                    },
+                    "authCode": "102301",
+                    "txnTime": 1542705957000,
+                    "customerIp": "10.10.12.64",
+                    "description": "Magazine subscription",
+                    "currencyCode": "USD",
+                    "status": "COMPLETED",
+                    "avsResponse": "MATCH_ADDRESS_ONLY",
+                    "cvvVerification": "MATCH",
+                    "availableToSettle": 0
+                    }
+                ]
             }
             
 # Group Settlement APIs
