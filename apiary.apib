@@ -1079,9 +1079,13 @@ Creates a new Payment Handle object.
                 }]
             }
             
-### Fetch Payment Handle [GET /v1/paymenthandles/f343d2bd-f6a6-4a6d-9534-96c0abd97649]
+### Fetch Payment Handle [GET /v1/paymenthandles/{paymenthandle_id}]
 
 Fetch an existing payment handle object, using the unique payment handle ID returned during payment handle creation request.
+
++ Parameter
+
+ + paymenthandle_id : `f343d2bd-f6a6-4a6d-9534-96c0abd97649` - This is the ID returned in the response to the Payment handle request.
 
 + Response 200 (application/json)
 
@@ -1132,9 +1136,13 @@ Fetch an existing payment handle object, using the unique payment handle ID retu
               }
             }
 
-### Fetch Payment Handle by Merchant Reference Number [GET /v1/paymenthandles?merchantRefNum=13995817730005389]
+### Fetch Payment Handle by Merchant Reference Number [GET /v1/paymenthandles?merchantRefNum={merchant_ref_num}]
 
 Fetch an existing payment handle object, using the merchant genereated unique id used during payment handle creation request.
+
++ Parameter
+
+ + merchant_ref_num : `13995817730005389` - This is the ID returned in the response to the Payment handle request.
 
 + Response 200 (application/json)
 
@@ -1623,13 +1631,13 @@ Click on above to fetch the payments by merchant refernce number.
             
 # Group Settlement APIs
 
-## Settlements [/v1/payments/{PAYMENT_ID}/settlements]
+## Settlements [/v1/payments/{payment_id}/settlements]
 
 Settlement with dupCheck and merchentRefNum
 
 + Parameter
 
-    + PAYMENT_ID : `c64ecbf2-a942-4f7c-b412-70217a0eb16e` - This is the ID returned in the response to the Payments request.
+    + payment_id : `c64ecbf2-a942-4f7c-b412-70217a0eb16e` - This is the ID returned in the response to the Payments request.
 
 ### Post Settlement [POST]
 
@@ -1701,13 +1709,13 @@ Settlement with dupCheck and merchentRefNum
             }
             
 
-### Get Settlements [GET /v1/settlements/{SETTLEMENT_ID}]
+### Get Settlements [GET /v1/settlements/{settlement_id}]
 
 Click on Get Settlements above to see how to fetch the settlements by settlement_id.
 
 + Parameter
 
-   + SETTLEMENT_ID : `d9bcfd85-8aa6-469d-80a3-e2ca196544da` - This is the ID returned in the response to the Payments request.
+   + settlement_id : `d9bcfd85-8aa6-469d-80a3-e2ca196544da` - This is the ID returned in the response to the Payments request.
 
 + Response 200 (application/json)
 
