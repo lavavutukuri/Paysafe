@@ -138,7 +138,8 @@ The following payment methods are supported
     + error -Error associated with the field name.
 
 ## statusAttributes (enum)
-+ RECEIVED - Our system has received the request and is waiting for the downstream processor’s response. 
++ RECEIVED - Our system has received the request and is waiting for the downstream processor’s response.
++ INITIATED - The transaction was initiated with the downstream provider.
 + PAYABLE - The merchant can proceed with payments post request.
 + PROCESSING - Payment Handle was authorized by customer, awaiting PSP response.
 + FAILED - The transaction failed, due to either an error or being declined. 
@@ -146,17 +147,28 @@ The following payment methods are supported
 + EXPIRED - The payment handle got expired due to merchant not proceeding with transaction payments post.
 + COMPLETED - Payments call was initiated successfully using the payment Handle.
 
+## consumerOperationAttributes(enum)
++ ADD - Consumer wants to save the payment instrument to the profile.
++ EDIT - Consumer wants to edit the payment instrument which is attached to the profile.
++ DELETE - Consumer wants to delete the saved payment instrument from his profile.
+
+## transactionTypeAttributes(enum)
++ PAYMENT - Payment Handle is created to continue the Payment.
++ STANDALONE_CREDIT - Payment Handle is created to continue the standalone credit.
++ ORIGINAL_CREDIT - Payment Handle is created to continue the original credit.
+
 ## PaymentHandleRequest (object)
 
 +  id: `length <=36`(required) - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Payments.
 + paymentHandleIdFrom : `length <=36` - This is the existing payment handle id, from which payment instrument and profile details has to be fetched. We can only use Payment handles whose usage is set to LOOKUP for this.
 + merchantRefNum: `length <= 100` - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
++ consumerOperation(consumerOperationAttributes) - This is the consumer operation on the payment instrument.
++ singleUseProfileToken (required) - This is the single use profile token of the profile on which consumer operation (ADD/EDIT/DELETE) need to be done.
++ transactionType(transactionTypeAttributes) - This specifies for which transaction type Payment Handle is created.
 + status(statusAttributes) - This is the status of the transaction request.
 + usage (enum) - Payment handle usage - whether single of multi use
     + SINGLE_USE - The payment handle can be used only once for transaction, it gets expired after due time.
     + MULTI_USE - The payment handle can be used multiple times like recurring/subscription payments.
-    + LOOKUP - Used in case of saved cards for showing in checkout UI.
-        LOOKUP Payment Handles only contains information about payment instrument and profile information.
 + paymentType (enum)(required) - The related payment Type/Channel/Method associated with this handle
     + CARD
     + SKRILL
