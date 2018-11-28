@@ -326,10 +326,15 @@ Using a card number – An authorization request that uses a credit card number 
 + merchantRefNum: P1234 (required) - length<=255 This is the merchant reference number created by the merchant and submitted as part of the request.
 + amount: 100 (required) - max=99999999999 This is the amount of the request, in minor units.
 + dupCheck: true (boolean) - This validates that this request is not a duplicate. A request is considered a duplicate if the merchantRefNum has already been used in a previous request within the past 90 days.
-+ description: Purchase Credit - This is a description of the transaction, provided by the merchant. length<=255
-+ customerIp: 204.91.0.12 -This is the customer's IP address.length<=39
-+ accountId: 123456789 (optional) -This is the merchant account number.
++ childAccountNum : `length <= 10` -This is the child merchant account number. It is returned only if the transaction was processed via a master account.
++ txnTime : `date` - This is the date and time the transaction was processed.For example, 2018-11-27T09:12:11Z
 + status (statusAttributes) - This is the status of the transaction request.
++ error(errorAttributes) - Details of the error.
++ splitPay (splitpayAttributes) - NOTE: For splitpay transactions only.
+        An array containing the linked accounts and the amount shared with each. You must include either amount or percent. However, you cannot include both values.
++ riskReasonCode (array) - An array of integers is returned, displaying the detailed risk reason codes if your transaction was declined. It is returned only if your account is configured accordingly.        
++ gatewayResponse(gatewayRequest) - This is the raw response returned by an acquirer. It is returned only if your account is configured accordingly.
+
 
 ## SettlementResponse (object)
 + id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
@@ -1757,13 +1762,13 @@ Click on above to fetch the Settlements by merchant refernce number.
 
 # Group Refund APIs
 
-## Refunds [/v1/payments/{payments_id}/refunds]
+## Refunds [/v1/payments/{settlement_id}/refunds]
 
 The settlement details in case of Card payment method can be sent through Request Body
 
 + Parameter
 
-    + payments_id : `6ddbc05a-ff40-4dc1-b2d3-f200934dfdde`
+    + settlement_id : `6ddbc05a-ff40-4dc1-b2d3-f200934dfdde`
 
 ### Post Refund [POST]
 
@@ -1811,7 +1816,7 @@ Click on Cancel a Refund above to see how to submit a Cancel Refund request.
 
 + Parameter
 
-    + refund_id : `d1fb46ee-2736-4ef5-a724-f263ace75374`
+    + refund_id : `d1fb46ee-2736-4ef5-a724-f263ace75374` - This is the ID returned in the response to the Refund request
     
 + Request (application/json)
 
@@ -1841,7 +1846,13 @@ Click on Cancel a Refund above to see how to submit a Cancel Refund request.
               ]
             }
             
-### Get Refund [GET ]
+### Get Refund [GET /v1/refunds/{refund_id}]
+
+Click on above to fetch the Refunds by Id.
+
++ Parameter
+
+    + refund_id : `d1fb46ee-2736-4ef5-a724-f263ace75374` - This is the ID returned in the response to the Refund request
 
 + Response 200 (application/json)
 
@@ -1864,6 +1875,31 @@ Click on Cancel a Refund above to see how to submit a Cancel Refund request.
                 {
                   "rel": "self",
                   "href": "https://api.test.paysafe.com/cardpayments/v1/accounts/123456789/refunds/d1fb46ee-2736-4ef5-a724-f263ace75374"
+                }
+              ]
+            }
+            
+### Get Refunds by Merchant Reference number [GET /v1/refunds?merchantRefNum={merchant_ref_num}]
+
+Click on above to fetch the Refunds by merchant refernce number.
+
++ Parameter
+
+   + merchant_ref_num : `13995817730005399` -This is the merchant reference number created by the merchant and submitted as part of the request.
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "settlements": [
+                {
+                  "merchantRefNum": "13995817730005399",
+                  "amount": 1000,
+                  "id": "d1fb46ee-2736-4ef5-a724-f263ace75374",
+                  "availableToRefund": 1000,
+                  "txnTime": 1542787238000,
+                  "status": "CANCELLED"
                 }
               ]
             }
