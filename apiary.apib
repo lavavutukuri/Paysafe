@@ -1780,7 +1780,7 @@ The settlement details in case of Card payment method can be sent through Reques
 
 + Parameter
 
-    + settlement_id : `6ddbc05a-ff40-4dc1-b2d3-f200934dfdde`
+    + settlement_id : `d9bcfd85-8aa6-469d-80a3-e2ca196544da`
 
 ### Post Refund [POST]
 
@@ -1798,8 +1798,8 @@ The settlement details in case of Card payment method can be sent through Reques
     + Body
 
             {
-              "merchantRefNum": "13995817730005399",
-              "amount": 5500,
+              "merchantRefNum": "21699917730001255",
+              "amount": 1001,
               "dupCheck": true
             }
                         
@@ -1808,18 +1808,18 @@ The settlement details in case of Card payment method can be sent through Reques
     + Body
 
             {
-              "id": "d1fb46ee-2736-4ef5-a724-f263ace75374",
-              "merchantRefNum": "13995817730005399",
-              "amount": 5500,
-              "dupCheck": true,
-              "txnTime": "2017-02-14T15:12:18Z",
-              "status": "COMPLETED",
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/accounts/123456789/refunds/d1fb46ee-2736-4ef5-a724-f263ace75374"
-                }
-              ]
+              "id": "3466f889-0c5c-4967-b011-bfe30c364195",
+              "merchantRefNum": "21699917730001255",
+              "amount": 1001,
+              "txnTime": 1543406639000,
+              "status": "PENDING",
+              "context": {
+                "masterMerchantId": "3148",
+                "transactionType": "REFUND",
+                "accountId": "89996498",
+                "groupType": "PMLE",
+                "paymentType": "CARDS"
+              }
             }
             
 ### Cancel Refund [PUT /v1/refunds/{refund_id}]
@@ -1828,7 +1828,7 @@ Click on Cancel a Refund above to see how to submit a Cancel Refund request.
 
 + Parameter
 
-    + refund_id : `d1fb46ee-2736-4ef5-a724-f263ace75374` - This is the ID returned in the response to the Refund request
+    + refund_id : `3466f889-0c5c-4967-b011-bfe30c364195` - This is the ID returned in the response to the Refund request
     
 + Request (application/json)
 
@@ -1864,31 +1864,18 @@ Click on above to fetch the Refunds by Id.
 
 + Parameter
 
-    + refund_id : `d1fb46ee-2736-4ef5-a724-f263ace75374` - This is the ID returned in the response to the Refund request
+    + refund_id : `3466f889-0c5c-4967-b011-bfe30c364195` - This is the ID returned in the response to the Refund request
 
 + Response 200 (application/json)
 
     + Body
 
             {
-              "id": "d1fb46ee-2736-4ef5-a724-f263ace75374",
-              "merchantRefNum": "13995817730005399",
-              "amount": 5500,
-              "dupCheck": true,
-              "txnTime": "2017-02-14T15:12:18Z",
-              "status": "PENDING",
-              "splitpay": [
-                {
-                  "linkedAccount": "123124124",
-                  "amount": 500
-                }
-              ],
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/accounts/123456789/refunds/d1fb46ee-2736-4ef5-a724-f263ace75374"
-                }
-              ]
+              "id": "3466f889-0c5c-4967-b011-bfe30c364195",
+              "merchantRefNum": "21699917730001255",
+              "amount": 1001,
+              "txnTime": 1543406639000,
+              "status": "PENDING"
             }
             
 ### Get Refunds by Merchant Reference number [GET /v1/refunds?merchantRefNum={merchant_ref_num}]
@@ -1897,23 +1884,22 @@ Click on above to fetch the Refunds by merchant refernce number.
 
 + Parameter
 
-   + merchant_ref_num : `13995817730005399` -This is the merchant reference number created by the merchant and submitted as part of the request.
+   + merchant_ref_num : `21699917730001255` -This is the merchant reference number created by the merchant and submitted as part of the request.
 
 + Response 200 (application/json)
 
     + Body
 
             {
-              "settlements": [
-                {
-                  "merchantRefNum": "13995817730005399",
-                  "amount": 1000,
-                  "id": "d1fb46ee-2736-4ef5-a724-f263ace75374",
-                  "availableToRefund": 1000,
-                  "txnTime": 1542787238000,
-                  "status": "CANCELLED"
-                }
-              ]
+                "refunds": [
+                    {
+                        "id": "3466f889-0c5c-4967-b011-bfe30c364195",
+                        "merchantRefNum": "21699917730001255",
+                        "amount": 1001,
+                        "txnTime": 1543406639000,
+                        "status": "PENDING"
+                    }
+                ]
             }
          
 # Group Standalone Credits APIs
