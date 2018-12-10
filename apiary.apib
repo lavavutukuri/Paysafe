@@ -40,6 +40,19 @@ The following payment methods are supported
     + lineItems.totalAmount : `length =99999999999` - This is the total amount of the line item, typically calculated as price multiplied by quantity, in minor units. The currency will be based on the account setting. Our system will not validate the accuracy of this value. The merchant's application must calculate this value correctly.
 
 ## gatewayRequest (object)
++ authCode : `length <= 50` - This is the Authorization code assigned by the issuing bank and returned in the response.
++ avsResponse (enum) - This is the AVS response from the card issuer.
+    + MATCH
+    + MATCH_ADDRESS_ONLY
+    + MATCH_ZIP_ONLY
+    + NO_MATCH
+    + NOT_PROCESSED
+    + UNKNOWN
++ cvvVerification (enum) - This is the response to the cvv submitted with the transaction request.
+    + MATCH
+    + NO_MATCH
+    + NOT_PROCESSED
+    + UNKNOWN
 + code -This is acquirer identification code, such as DJN, CRX, etc.
 + responseCode -This is the raw response returned by the acquirer.
 + avsCode -This is the raw AVS code returned by the acquirer.
@@ -156,14 +169,15 @@ The following payment methods are supported
 + PAYMENT - Payment Handle is created to continue the Payment.
 + STANDALONE_CREDIT - Payment Handle is created to continue the standalone credit.
 + ORIGINAL_CREDIT - Payment Handle is created to continue the original credit.
++ VERIFICATION - Payment Handle is created to continue the verification request.
 
 ## PaymentHandleRequest (object)
 
-+  id: `length <=36`(required) - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Payments.
-+ paymentHandleIdFrom : `length <=36` - This is the existing payment handle id, from which payment instrument and profile details has to be fetched. We can only use Payment handles whose usage is set to LOOKUP for this.
++ id: `length <=36`(required) - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Payments.
++ paymentHandleTokenFrom: `length <= 36` - This is the existing payment handle id, from which payment instrument and profile details has to be fetched.
 + merchantRefNum: `length <= 100` - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
-+ consumerOperation(consumerOperationAttributes) - This is the consumer operation on the payment instrument.
-+ singleUseProfileToken (required) - This is the single use profile token of the profile on which consumer operation (ADD/EDIT/DELETE) need to be done.
++ consumerOperation(consumerOperationAttributes) -Either consumerOperation or transactionType is Mandatory. This is the consumer operation on the payment instrument.
++ singleUseProfileToken - This is the single use profile token of the profile on which consumer operation (ADD/EDIT/DELETE) need to be done.
 + transactionType(transactionTypeAttributes) - This specifies for which transaction type Payment Handle is created.
 + status(statusAttributes) - This is the status of the transaction request.
 + usage (enum) - Payment handle usage - whether single of multi use
@@ -207,7 +221,7 @@ The following payment methods are supported
     + cvv - Min = 3,Max = 4 This is the 3- or 4-digit security code that appears on the card following the card number.
     + track1 - This is Track 1 information read from the card's magnetic stripe.
     + track2 - This is Track 2 information read from the card's magnetic stripe.
-+ Customer Profile - Customer information is mandatory if savePaymentInstrument is set to true
++ profile - Customer information is mandatory if savePaymentInstrument is set to true
  - id: Gt56fR6 - Id is enough, and if id is not present, customer details like firstName, lastName, email ... has to be provided,if id is specified, the additional details provided will be overwritten to existing customer profile?
  - status - The status of customer in the system, returned in the response.
  - merchantCustomerId - length = 255 This is the reference number for the customer created by the merchant and submitted as part of the request. It must be unique for each customer.
@@ -220,7 +234,7 @@ The following payment methods are supported
  - mobile - mobile
  - gender - gender
  - nationality - indian
-+ billingAddress - These are the billing details for the request.
++ billingDetails - These are the billing details for the request.
  - street: 100 queen - length<=50 This is the first line of the street address in the billing address.
  - street2: unit 201 - length<=50 This is the second line of the street address in the billing address, if required (e.g., apartment number).
  - city: Toronto - length<=40 This is the city in the billing address.
@@ -231,12 +245,11 @@ The following payment methods are supported
 + merchantDescriptor - This is the merchant descriptor that will be displayed on the customer's card statement.
     + dynamicDescriptor: Online Store - This is a merchant descriptor that will be displayed on a customer’s card statement. Length = 20
     + phone: 12345678 - This is the merchant’s phone number, which will be appended to the merchant descriptor on a customer’s card statement. Length = 13
-+ links (object) - Specifies all links
-    + type (enum)
-        + REDIRECT - Merchant needs to do redirect to this url
-        + RETURN_SUCCESS - Paysafe will return to this merchant url post successful payment
-        + RETURN_FAILURE - Paysafe will return to this merchant url post if payment is failed
-    + url - The actual URL
++ returnLinks (object) - Specifies all links
+    + rel(enum) -This is the link type, allowing different endpoints to be targeted depending on the end state of the transaction. The link relation describes how this link relates to the previous call. 
+        + self - This will get details of the current call.
+        + payment_redirect - Merchant needs to redirect this consumer to this url to complete payment
+    + href - The actual URL
     + method - The http method
 + customerIp - length<=39 This is the customer's IP address.
 + timeToLiveSeconds: 1212121212 (number) - This is the period of time the single-use token is valid before expiration, in seconds, returned in the response.(Long)
@@ -259,25 +272,12 @@ The following payment methods are supported
     + partialAuth.orginalAmount (number) -This is the actual amount for which authorization is asked.
 + paymentHandleToken (string) - This is the payment handle token.
 + paymentHandle (PaymentHandleRequest) - This is the Payment Handle details.
-+ authCode : `length <= 50` - This is the Authorization code assigned by the issuing bank and returned in the response.
 + availableToSettle (number) -This is the amount of of the Authorization remaining to settle, in minor units.
 + childAccountNum : `length <= 10` -This is the child merchant account number. It is returned only if the transaction was processed via a master account.
 + customerIp - `length<=39` -This is the customer's IP address.
 + description: `length<=255` -This is a description of the transaction, provided by the merchant.
 + status (statusAttributes) - This is the status of the transaction request.
 + currencyCode: CAD - Max = 3 This is the currency of the merchant account, e.g., USD or CAD, returned in the request response.
-+ avsResponse (enum) - This is the AVS response from the card issuer.
-    + MATCH
-    + MATCH_ADDRESS_ONLY
-    + MATCH_ZIP_ONLY
-    + NO_MATCH
-    + NOT_PROCESSED
-    + UNKNOWN
-+ cvvVerification (enum) - This is the response to the cvv submitted with the transaction request.
-    + MATCH
-    + NO_MATCH
-    + NOT_PROCESSED
-    + UNKNOWN
 + level2Level3(level2Level3Request) - This allows merchants who are enabled to provide additional L2/L3 transaction data.
         Not all processing gateways support this parameter. Contact your account manager for more information.
 + gatewayResponse(gatewayRequest) - This is the raw response returned by an acquirer. It is returned only if your account is configured accordingly.
@@ -363,7 +363,7 @@ Using a card number – An authorization request that uses a credit card number 
 + gatewayResponse(gatewayRequest) - This is the raw response returned by an acquirer. It is returned only if your account is configured accordingly.
 
 
-# Group Metadata APIs
+# Group Payment Methods
 
 ## Fetch Available Payment Methods [/v1/paymentmethods]
 
@@ -443,7 +443,7 @@ This API will provide all the available payment methods for the Merchant. Mercha
             }
             
 
-# Group Payment Handle APIs
+# Group Payment Handles
 
 ## Payment Handle [/v1/paymenthandles]
 
@@ -460,49 +460,47 @@ Creates a new Payment Handle object.
     + Headers
 
             Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+            
+    + Attributes (PaymentHandleRequest)
     
     + Body
 
             {
-                "amount": "100",
-                "currency": "CAD",
-                "customerIp": "172.0.0.1",
-                "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
+              "merchantRefNum": "merchantRefNum-101",
+              "transactionType": "PAYMENT",
+              "card": {
+                "cardNum": "5191330000004415",
+                "cardExpiry": {
+                  "month": 10,
+                  "year": 2020
                 },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
+                "cvv": "111",
+                "holderName": "poorna"
+              },
+              "paymentType": "CARDS",
+              "amount": 190,
+              "currencyCode": "GBP",
+              "customerIp": "172.0.0.1",
+              "billingDetails": {
+                "nickName": "Home",
+                "street": "100 Queen",
+                "street2": "Unit 201",
+                "city": "Toronto",
+                "zip": "M5H 2N2",
+                "country": "CA"
+              },
+              "returnLinks": [
+                {
+                  "rel": "on_completed",
+                  "href": "https://usgaminggamblig/payment/return/success",
+                  "method": "GET"
                 },
-                "paymentMethod": "CARD",
-                "card": {
-                    "holderName": "John Smith",
-                    "cardNum": "4111111111111119",
-                    "cardExpiry": {
-                        "month": "12",
-                        "year": "2018"
-                    },
-                    "cvv" : "123"   
-                },
-                "links": [ 
-              {
-                 "type" : "RETURN_SUCCESS",
-                 "url" : "https://usgaminggamblig/payment/return/succuss",
-                 "method" : "GET"
+                {
+                  "rel": "on_failed",
+                  "href": "https://usgaminggamblig/payment/return/failed",
+                  "method": "GET"
                 }
-            ]
+              ]
             }
 
 + Response 200 (application/json)
@@ -510,51 +508,49 @@ Creates a new Payment Handle object.
     + Body
 
             {
-                "id": "ph_TGFVRedfghy875redfghnEDDDD",
-                "amount": "100",
-                "currency": "CAD",
-                "action": "NONE",
-                "status": "PAYABLE",
-                "customerIp": "172.0.0.1",
-                "paymentHandleToken": "xfddsfshkhkhwqeq324",
-                "timeToLiveSeconds":"899",
-                "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
+              "id": "26359efd-7cfb-4014-a13d-1724e3ff17fa",
+              "amount": 190,
+              "merchantRefNum": "merchantRefNum-101",
+              "action": "NONE",
+              "currencyCode": "GBP",
+              "usage": "SINGLE_USE",
+              "status": "PAYABLE",
+              "paymentType": "CARD",
+              "executionMode": "SYNCHRONOUS",
+              "customerIp": "172.0.0.1",
+              "paymentHandleToken": "SCO3wKcIyLoQbQvw",
+              "billingDetails": {
+                "nickName": "Home",
+                "street": "100 Queen",
+                "street2": "Unit 201",
+                "city": "Toronto",
+                "country": "CA",
+                "zip": "M5H 2N2"
+              },
+              "card": {
+                "cardExpiry": {
+                  "month": "10",
+                  "year": "2020"
                 },
-                "billingAddress": {
-                    "nickName": "Home",
-                    "street": "100 Queen",
-                    "street2": "Unit 200",
-                    "city": "Toronto",
-                    "zip": "M5H 2N2",
-                    "country": "CA",
-                    "state": "ON"
+                "holderName": "poorna",
+                "cardType": "MC",
+                "cardBin": "519133",
+                "lastDigits": "4415"
+              },
+              "returnLinks": [
+                {
+                  "rel": "on_completed",
+                  "href": "https://usgaminggamblig/payment/return/success",
+                  "method": "GET"
                 },
-                "paymentMethod": "CARD",
-                "savePaymentInstrument": "false", 
-                "type": "SINGLE_USE",
-                "card": {
-                    "holderName": "John Smith",
-                    "last4Digits": "1119",
-                    "cardExpiry": {
-                        "month": "12",
-                        "year": "2018"
-                    }
-                },
-                "links": [ 
-              {
-                 "type" : "RETURN_SUCCESS",
-                 "url" : "https://usgaminggamblig/payment/return/succuss",
-                 "method" : "GET"
+                {
+                  "rel": "on_failed",
+                  "href": "https://usgaminggamblig/payment/return/failed",
+                  "method": "GET"
                 }
-            ]          
+              ],
+              "timeToLiveSeconds": 299,
+              "transactionType": "PAYMENT"
             }
 
 + Request CARD Payment Handle with 3DS enabled (application/json)
@@ -563,52 +559,44 @@ Creates a new Payment Handle object.
 
             Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
             
-    + Attributes (PaymentHandleRequest)
-    
-    
     + Body
 
             {
-              "amount": "100",
-              "currency": "CAD",
-              "customerIp": "172.0.0.1",
-              "customer": {
-                    "firstName": "John",
-                    "lastName": "Smith",
-                    "dateOfBirth": {
-                        "year": 1981,
-                        "month": 10,
-                        "day": 24
-                    },
-                    "email": "john.smith@email.com"
+              "merchantRefNum": "merchantRefNum-124",
+              "transactionType": "PAYMENT",
+              "card": {
+                "cardNum": "4538261230000003",
+                "cardExpiry": {
+                  "month": 10,
+                  "year": 2020
                 },
-              "billingAddress": {
+                "cvv": "111",
+                "holderName": "poorna"
+              },
+              "paymentType": "CARDS",
+              "amount": 3000,
+              "currencyCode": "GBP",
+              "customerIp": "172.0.0.1",
+              "billingDetails": {
                 "nickName": "Home",
                 "street": "100 Queen",
-                "street2": "Unit 200",
+                "street2": "Unit 201",
                 "city": "Toronto",
                 "zip": "M5H 2N2",
-                "country": "CA",
-                "state": "ON"
+                "country": "CA"
               },
-              "paymentMethod": "CARD",
-              "savePaymentInstrument": "false",
-              "card": {
-                "holderName": "John Smith",
-                "cardNum": "4000000000000008",
-                "cardExpiry": {
-                  "month": "12",
-                  "year": "2018"
+              "returnLinks": [
+                {
+                  "rel": "on_completed",
+                  "href": "https://usgaminggamblig/payment/return/success",
+                  "method": "GET"
                 },
-                "cvv" : "123"
-              },
-              "links": [ 
-              {
-                 "type" : "RETURN_SUCCESS",
-                 "url" : "https://usgaminggamblig/payment/return/succuss",
-                 "method" : "GET"
+                {
+                  "rel": "on_failed",
+                  "href": "https://usgaminggamblig/payment/return/failed",
+                  "method": "GET"
                 }
-            ]
+              ]
             }
 
 + Response 200 (application/json)
@@ -616,56 +604,194 @@ Creates a new Payment Handle object.
     + Body
 
             {
-              "id": "ph_TGFVRedfghy875redfghnED",
-              "amount": "100",
-              "currency": "CAD",
-              "customerIp": "172.0.0.1",
+              "id": "372b5ee7-6360-4403-b444-164f8f1d2709",
+              "amount": 3000,
+              "merchantRefNum": "merchantRefNum-124",
               "action": "REDIRECT",
+              "currencyCode": "GBP",
+              "usage": "SINGLE_USE",
               "status": "INITIATED",
-              "timeToLiveSeconds":"899",
-              "paymentHandleToken": "xfddsfshkhkhwqeq324",
-              "customer": {
-                "firstName": "John",
-                "lastName": "Smith",
-                "dateOfBirth": {
-                  "year": 1981,
-                  "month": 10,
-                  "day": 24
-                },
-                "email": "john.smith@email.com"
-              },
-              "billingAddress": {
+              "paymentType": "CARD",
+              "executionMode": "SYNCHRONOUS",
+              "customerIp": "172.0.0.1",
+              "paymentHandleToken": "SCyGZDlUuZ9zxjyd",
+              "billingDetails": {
                 "nickName": "Home",
                 "street": "100 Queen",
-                "street2": "Unit 200",
+                "street2": "Unit 201",
+                "city": "Toronto",
+                "country": "CA",
+                "zip": "M5H 2N2"
+              },
+              "card": {
+                "cardExpiry": {
+                  "month": "10",
+                  "year": "2020"
+                },
+                "holderName": "poorna",
+                "cardType": "VI",
+                "cardBin": "453826",
+                "lastDigits": "0003"
+              },
+              "returnLinks": [
+                {
+                  "rel": "on_completed",
+                  "href": "https://usgaminggamblig/payment/return/success",
+                  "method": "GET"
+                },
+                {
+                  "rel": "on_failed",
+                  "href": "https://usgaminggamblig/payment/return/failed",
+                  "method": "GET"
+                },
+                {
+                  "rel": "payment_redirect",
+                  "href": "http://hyd-dev-ms1.in.paysafe.com:8287/cardadapter/v1/card/redirect/372b5ee7-6360-4403-b444-164f8f1d2709",
+                  "method": "GET"
+                }
+              ],
+              "timeToLiveSeconds": 299,
+              "transactionType": "PAYMENT"
+            }
+
++ Request Create payment handle for STANDALONE_CREDIT or ORIGINAL_CREDIT using non-3ds or 3ds cards (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+            
+    + Body
+
+            {
+              "merchantRefNum": "merchantRefNum-190",
+              "transactionType": "STANDALONE_CREDIT",
+              "card": {
+                "cardNum": "4538261230000003",
+                "cardExpiry": {
+                  "month": 10,
+                  "year": 2020
+                },
+                "cvv": "111",
+                "holderName": "poorna"
+              },
+              "paymentType": "CARDS",
+              "amount": 3000,
+              "currencyCode": "GBP",
+              "customerIp": "172.0.0.1",
+              "billingDetails": {
+                "nickName": "Home",
+                "street": "100 Queen",
+                "street2": "Unit 201",
                 "city": "Toronto",
                 "zip": "M5H 2N2",
+                "country": "CA"
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "372b5ee7-6360-4403-b444-164f8f1d2709",
+              "amount": 3000,
+              "merchantRefNum": "merchantRefNum-190",
+              "action": "NONE",
+              "currencyCode": "GBP",
+              "usage": "SINGLE_USE",
+              "status": "PAYABLE",
+              "paymentType": "CARD",
+              "executionMode": "SYNCHRONOUS",
+              "customerIp": "172.0.0.1",
+              "paymentHandleToken": "SCyGZDlUuZ9zxjyd",
+              "billingDetails": {
+                "nickName": "Home",
+                "street": "100 Queen",
+                "street2": "Unit 201",
+                "city": "Toronto",
                 "country": "CA",
-                "state": "ON"
+                "zip": "M5H 2N2"
               },
-              "paymentMethod": "CARD",
-              "savePaymentInstrument": "false",
-              "type": "SINGLE_USE",
               "card": {
-                "holderName": "John Smith",
-                "last4Digits": "0008",
+                "cardExpiry": {
+                  "month": "10",
+                  "year": "2020"
+                },
+                "holderName": "poorna",
+                "cardType": "VI",
+                "cardBin": "453826",
+                "lastDigits": "0003"
+              },
+              "timeToLiveSeconds": 299,
+              "transactionType": "STANDALONE_CREDIT"
+            }
+            
++ Request Create payment handle of transaction type VERIFICATION without amount (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+            
+    + Body
+
+            {
+              "merchantRefNum": "merchantRefNum-196",
+              "transactionType": "VERIFICATION",
+              "card": {
+                "cardNum": "4107857757053670",
+                "cardExpiry": {
+                  "month": 12,
+                  "year": 2034
+                },
+                "cvv": "222"
+              },
+              "paymentType": "CARDS",
+              "currencyCode": "GBP",
+              "customerIp": "172.0.0.1",
+              "billingDetails": {
+                "nickName": "Home",
+                "street": "100 Queen",
+                "street2": "Unit 201",
+                "city": "Toronto",
+                "zip": "M5H 2N2",
+                "country": "CA"
+              }
+            }
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "16113177-3d68-4c91-8f69-ce41903f1446",
+              "merchantRefNum": "merchantRefNum-196",
+              "action": "NONE",
+              "currencyCode": "GBP",
+              "usage": "SINGLE_USE",
+              "status": "PAYABLE",
+              "timeToLiveSeconds": 299,
+              "transactionType": "VERIFICATION",
+              "paymentType": "CARD",
+              "executionMode": "SYNCHRONOUS",
+              "customerIp": "172.0.0.1",
+              "paymentHandleToken": "SCfZX0QEvEvSszKy",
+              "billingDetails": {
+                "nickName": "Home",
+                "street": "100 Queen",
+                "street2": "Unit 201",
+                "city": "Toronto",
+                "country": "CA",
+                "zip": "M5H 2N2"
+              },
+              "card": {
                 "cardExpiry": {
                   "month": "12",
-                  "year": "2018"
-                }
-              },
-              "links": [ 
-              {
-                 "type" : "RETURN_SUCCESS",
-                 "url" : "https://usgaminggamblig/payment/return/succuss",
-                 "method" : "GET"
+                  "year": "2034"
                 },
-              {
-                 "type" : "REDIRECT",
-                 "url" : "https://pay.qa.netbanx.com/emulator/test_acs",
-                 "method" : "GET"
-                }
-            ]
+                "cardType": "VI",
+                "cardBin": "410785",
+                "lastDigits": "3670"
+              }
             }
             
             
@@ -1096,121 +1222,122 @@ Creates a new Payment Handle object.
                 }]
             }
             
-### Fetch Payment Handle [GET /v1/paymenthandles/{paymenthandle_id}]
+### Get Payment Handle [GET /v1/paymenthandles/{paymenthandle_id}]
 
 Fetch an existing payment handle object, using the unique payment handle ID returned during payment handle creation request.
 
 + Parameter
 
- + paymenthandle_id : `f343d2bd-f6a6-4a6d-9534-96c0abd97649` - This is the ID returned in the response to the Payment handle request.
+ + paymenthandle_id : `26359efd-7cfb-4014-a13d-1724e3ff17fa` - This is the ID returned in the response to the Payment handle request.
 
 + Response 200 (application/json)
 
     + Body
 
             {
-                "id": "f343d2bd-f6a6-4a6d-9534-96c0abd97649",
-                "merchantRefNum": "13995817730005399",
-                "status": "INITIATED",
-                "usage": "SINGLE_USE",
-                "paymentType": "CARD",
-                "action": "REDIRECT",
-                "executionMode": "SYNCHRONOUS",
-                "amount": 1000,
-                "currencyCode": "USD",
-                "links": [
-                    {
-                    "type": "REDIRECT",
-                    "url": "http://test.paysafe.com",
-                    "method": "POST"
-                },
-                {
-                "type": "RETURN_SUCCESS",
-                "url": "http://merchant.com/success",
-                 "method": "POST"
-            }
-            ],
-                "customerIp": "10.10.12.64",
-                "merchantDescriptor": {
-                "dynamicDescriptor": "Casino slots payin"
-             },
-                "paymentHandleToken": "SCC54RTfi7x5sgjV",
-                "billingAddress": {
-                    "street": "Wall Street",
-                    "street2": "NYSE",
-                    "city": "New York",
-                    "state": "NY",
-                    "country": "US",
-                    "zip": "12345"
-            },
-               "card": {
-                "holderName": "John Smith",
-                "last4Digits": "0008",
+              "id": "26359efd-7cfb-4014-a13d-1724e3ff17fa",
+              "amount": 1900,
+              "merchantRefNum": "merchantRefNum-115",
+              "action": "NONE",
+              "currencyCode": "GBP",
+              "usage": "SINGLE_USE",
+              "status": "EXPIRED",
+              "timeToLiveSeconds": 0,
+              "transactionType": "PAYMENT",
+              "paymentType": "CARD",
+              "executionMode": "SYNCHRONOUS",
+              "customerIp": "172.0.0.1",
+              "paymentHandleToken": "SC0YsGIIgFksiOsQ",
+              "paymentToken": "SC0YsGIIgFksiOsQ",
+              "billingDetails": {
+                "street": "100 Queen",
+                "street2": "Unit 201",
+                "city": "Toronto",
+                "country": "CA",
+                "zip": "M5H 2N2"
+              },
+              "card": {
                 "cardExpiry": {
                   "month": "12",
-                  "year": "2018"
+                  "year": "2034"
+                },
+                "holderName": "poorna",
+                "cardType": "MC",
+                "cardBin": "519133",
+                "lastDigits": "4415"
+              },
+              "returnLinks": [
+                {
+                  "rel": "on_completed",
+                  "href": "https://usgaminggamblig/payment/return/success",
+                  "method": "GET"
+                },
+                {
+                  "rel": "on_failed",
+                  "href": "https://usgaminggamblig/payment/return/failed",
+                  "method": "GET"
                 }
-              }
+              ]
             }
 
-### Fetch Payment Handle by Merchant Reference Number [GET /v1/paymenthandles?merchantRefNum={merchant_ref_num}]
+### Get Payment Handle by Merchant Reference Number [GET /v1/paymenthandles?merchantRefNum={merchant_ref_num}]
 
 Fetch an existing payment handle object, using the merchant genereated unique id used during payment handle creation request.
 
 + Parameter
 
- + merchant_ref_num : `13995817730005389` - This is the ID returned in the response to the Payment handle request.
+    + merchant_ref_num : `13995817730005389` - This is the ID returned in the response to the Payment handle request.
 
 + Response 200 (application/json)
 
     + Body
 
             {
-                "id": "f343d2bd-f6a6-4a6d-9534-96c0abd97649",
-                "merchantRefNum": "13995817730005399",
-                "status": "INITIATED",
-                "usage": "SINGLE_USE",
-                "paymentType": "CARD",
-                "action": "REDIRECT",
-                "executionMode": "SYNCHRONOUS",
-                "amount": 1000,
-                "currencyCode": "USD",
-                "links": [
-                    {
-                    "type": "REDIRECT",
-                    "url": "http://test.paysafe.com",
-                    "method": "GET"
-                },
-                {
-                "type": "RETURN_SUCCESS",
-                "url": "http://merchant.com/success",
-                 "method": "GET"
-            }
-            ],
-                "customerIp": "10.10.12.64",
-                "merchantDescriptor": {
-                "dynamicDescriptor": "Casino slots payin"
-             },
-                "paymentHandleToken": "SCC54RTfi7x5sgjV",
-                "billingAddress": {
-                    "street": "Wall Street",
-                    "street2": "NYSE",
-                    "city": "New York",
-                    "state": "NY",
-                    "country": "US",
-                    "zip": "12345"
-            },
-               "card": {
-                "holderName": "John Smith",
-                "last4Digits": "0008",
+              "id": "cc719995-59ed-4146-a936-b54db72bcaa8",
+              "amount": 1900,
+              "merchantRefNum": "merchantRefNum-130",
+              "action": "NONE",
+              "currencyCode": "GBP",
+              "usage": "SINGLE_USE",
+              "status": "EXPIRED",
+              "timeToLiveSeconds": 0,
+              "transactionType": "PAYMENT",
+              "paymentType": "CARD",
+              "executionMode": "SYNCHRONOUS",
+              "customerIp": "172.0.0.1",
+              "paymentHandleToken": "SC0YsGIIgFksiOsQ",
+              "billingDetails": {
+                "street": "100 Queen",
+                "street2": "Unit 201",
+                "city": "Toronto",
+                "country": "CA",
+                "zip": "M5H 2N2"
+              },
+              "card": {
                 "cardExpiry": {
                   "month": "12",
-                  "year": "2018"
+                  "year": "2034"
+                },
+                "holderName": "poorna",
+                "cardType": "MC",
+                "cardBin": "519133",
+                "lastDigits": "4415"
+              },
+              "returnLinks": [
+                {
+                  "rel": "on_completed",
+                  "href": "https://usgaminggamblig/payment/return/success",
+                  "method": "GET"
+                },
+                {
+                  "rel": "on_failed",
+                  "href": "https://usgaminggamblig/payment/return/failed",
+                  "method": "GET"
                 }
-              }
+              ]
             }
 
-# Group Payment APIs
+# Group Payments
 
 ## Payments [/v1/payments]
 
@@ -1221,9 +1348,7 @@ For Purchase requests. i.e., requests which authorizes and settles in the same r
 ### Create Payment with Payment Handle Token [POST]
 
 - An Payment request that will have to be settled later
-- A purchase request, which authorizes and settles the payment in a single request by setting the settleWithAuth parameter to true
-- An Payment request using a payment token
-- An Payment including 3D Secure authentication data
+- A purchase/sale request, which authorizes and settles the payment in a single request by setting the settleWithAuth parameter to true
 
 
 + Request Card Payment with Payment Handle (application/json)
@@ -1237,75 +1362,14 @@ For Purchase requests. i.e., requests which authorizes and settles in the same r
     + Body
 
             {
-              "merchantRefNum": "merchantRef-1234",
-              "amount": "100",
-              "currency": "USD",
+              "merchantRefNum": "merchantRefNum-108",
+              "amount": 190,
+              "currencyCode": "GBP",
               "dupCheck": true,
-              "paymentHandleToken": "sc_afsdsfsdfs",
-              "settleWithAuth": "false",
-              "preAuth": "false",
-              "level2Level3": {
-                "localTaxAmount": 15,
-                "nationalTaxAmount": 0,
-                "freightAmount": 0,
-                "dutyAmount": 0,
-                "destinationZip": "90210",
-                "destinationCountry": "US",
-                "shipFromZip": "90210",
-                "lineItems": [
-                  {
-                    "description": "Disney Cruise Line - Adult",
-                    "productCode": "DCL-A",
-                    "quantity": 2,
-                    "unitAmount": 120000,
-                    "taxRate": 5,
-                    "taxAmount": 12000,
-                    "totalAmount": 252000
-                  },
-                  {
-                    "description": "Disney Cruise Line - Kids",
-                    "productCode": "DCL-K",
-                    "quantity": 1,
-                    "unitAmount": 60000,
-                    "taxRate": 5,
-                    "taxAmount": 3000,
-                    "totalAmount": 63000
-                  }
-                ]
-              },
-              "storedCredential": {
-                "type": "RECURRING",
-                "occurrence": "SUBSEQUENT"
-              },
-              "accordD": {
-                "financingType": "DEFERRED_PAYMENT",
-                "plan": "123",
-                "gracePeriod": "12"
-              },
-              "recipient": {
-                "dateOfBirth": {
-                  "day": 29,
-                  "month": 1,
-                  "year": 2001
-                },
-                "zip": "CB24 9AD",
-                "lastName": "Smith",
-                "accountNumber": "ABC1234567890"
-              },
-              "splitpay": [
-                {
-                  "linkedAccount": "123124124",
-                  "percent": 5
-                },
-                {
-                  "linkedAccount": "767862873",
-                  "amount": 500
-                }
-              ],
-              "customerIp": "204.91.0.12",
-              "metadata": {
-                "key1": "value1"
-              }
+              "settleWithAuth": false,
+              "paymentHandleToken": "SCZJg09GWSv36NLB",
+              "customerIp": "10.10.12.64",
+              "description": "Magazine subscription"
             }
             
 + Response 200 (application/json)
@@ -1313,108 +1377,26 @@ For Purchase requests. i.e., requests which authorizes and settles in the same r
     + Body
 
             {
-              "id": "a4f649d7-68e8-4b7d-bede-cf8f1f6f66f3",
-              "merchantRefNum": "merchantRef-1234",
-              "amount": "100",
-              "currency": "USD",
+              "id": "3aeb9c63-6386-46a3-9f8e-f452e722228a",
+              "amount": 190,
+              "merchantRefNum": "merchantRefNum-108",
+              "settleWithAuth": false,
+              "paymentHandleToken": "SCZJg09GWSv36NLB",
+              "txnTime": "2018-12-09T11:05:24+0000",
+              "customerIp": "10.10.12.64",
               "dupCheck": true,
-              "paymentHandleToken": "sc_afsdsfsdfs",
-              "paymentHandle": {
-                "id": "49d7a4f6-68q8-4bsd-1234-6f66f3cf8f1f"
-              },
-              "settleWithAuth": "false",
-              "preAuth": "false",
-              "level2Level3": {
-                "localTaxAmount": 15,
-                "nationalTaxAmount": 0,
-                "freightAmount": 0,
-                "dutyAmount": 0,
-                "destinationZip": "90210",
-                "destinationCountry": "US",
-                "shipFromZip": "90210",
-                "lineItems": [
-                  {
-                    "description": "Disney Cruise Line - Adult",
-                    "productCode": "DCL-A",
-                    "quantity": 2,
-                    "unitAmount": 120000,
-                    "taxRate": 5,
-                    "taxAmount": 12000,
-                    "totalAmount": 252000
-                  },
-                  {
-                    "description": "Disney Cruise Line - Kids",
-                    "productCode": "DCL-K",
-                    "quantity": 1,
-                    "unitAmount": 60000,
-                    "taxRate": 5,
-                    "taxAmount": 3000,
-                    "totalAmount": 63000
-                  }
-                ]
-              },
-              "storedCredential": {
-                "type": "RECURRING",
-                "occurrence": "SUBSEQUENT"
-              },
-              "accordD": {
-                "financingType": "DEFERRED_PAYMENT",
-                "plan": "123",
-                "gracePeriod": "12"
-              },
-              "recipient": {
-                "dateOfBirth": {
-                  "day": 29,
-                  "month": 1,
-                  "year": 2001
-                },
-                "zip": "CB24 9AD",
-                "lastName": "Smith",
-                "accountNumber": "ABC1234567890"
-              },
-              "splitpay": [
-                {
-                  "linkedAccount": "123124124",
-                  "percent": 5
-                },
-                {
-                  "linkedAccount": "767862873",
-                  "amount": 500
-                }
-              ],
-              "customerIp": "204.91.0.12",
-              "metadata": {
-                "key1": "value1"
-              },
+              "description": "Magazine subscription",
+              "currencyCode": "GBP",
               "status": "COMPLETED",
-              "statusReason": "USER_CANCELLED",
-              "riskReasonCodes": [
-                "1",
-                "2"
-              ],
-              "txnTime": "2018-10-24T15:12:18Z",
-              "authentication": {
-                "eci": 5,
-                "cavv": "AAABCIEjYgAAAAAAlCNiENiWiV+=",
-                "xid": "OU9rcTRCY1VJTFlDWTFESXFtTHU=",
-                "threeDEnrollment": "Y",
-                "threeDResult": "Y",
-                "signatureStatus": "Y"
-              },
-              "avsResponse": "MATCH",
-              "cvvVerification": "MATCH",
+              "availableToSettle": 1900,
               "gatewayResponse": {
-                "authCode": "026189",
-                "code": "CRX",
-                "responseCode": "0",
-                "avsCode": "M",
-                "responseId": "625996",
-                "requestId": "2263",
-                "referenceNbr": "315312161910",
-                "description": "Transaction has been executed successfully",
-                "txnDateTime": "11/11/2013 at 12:16:19 EST",
-                "responseReasonCode": "00",
-                "cvv2Result": "M"
+                "authCode": "135880",
+                "avsResponse": "MATCH",
+                "cvvVerification": "MATCH"
+              },
+              "merchantDescriptor": {
+                "dynamicDescriptor": "54321",
+                "phone": "333-123456789"
               }
             }
 
@@ -1467,57 +1449,7 @@ For Purchase requests. i.e., requests which authorizes and settles in the same r
               "status": "PENDING"
             }
             
-+ Request (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-              "merchantRefNum": "merchant tokenization example-789",
-              "amount": 1295,
-              "settleWithAuth": false,
-              "paymentHandleId": "LTEyMzYzMjQ3ODg",
-              "customerIp": "204.91.0.12",
-              "description": "Magazine subscription"
-            }
-                        
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-              "id": "a02e52c7-c991-4418-966a-b62989cb0eae",
-              "merchantRefNum": "ORDER_ID:1231",
-              "amount": 10098,
-              "customerIp": "192.0.126.111",
-              "paymentHandleId": "LTEyMzYzMjQ3ODg",
-              "skrill": {
-                "mandateReference": "1000-3232659874-65985698",
-                "accountHolderName": "XYZ Company",
-                "lastDigits": "66"
-              },
-              "profile": {
-                "firstName": "Joe",
-                "lastName": "Smith",
-                "email": "Joe.Smith@hotmail.com"
-              },
-              "billingAddress": {
-                "street": "Hoofdstraat 101",
-                "city": "Heeswijk-Dinther",
-                "country": "NL",
-                "zip": "5233 HG",
-                "phone": "06-12304567"
-              },
-              "txnTime": "2014-12-14T15:12:18Z",
-              "currencyCode": "EUR",
-              "status": "PENDING"
-            }
-            
-                        
-+ Request (application/json)
++ Request  Payment with Sepa Payment Handle (application/json)
 
     + Headers
 
@@ -1572,36 +1504,34 @@ Click on Get Payments above to see how to fetch the payments by payment_id.
 
 + Parameter
 
-   + payment_id : `c64ecbf2-a942-4f7c-b412-70217a0eb16e` - This is the ID returned in the response to the Payments request.
+   + payment_id : `3aeb9c63-6386-46a3-9f8e-f452e722228a` - This is the ID returned in the response to the Payments request.
 
 + Response 200 (application/json)
 
     + Body
 
             {
-                "id": "c64ecbf2-a942-4f7c-b412-70217a0eb16e",
-                "amount": 1000,
-                "preAuth": false,
-                "merchantRefNum": "13995817730001164",
-                "settleWithAuth": false,
-                "paymentHandleToken": "SCmurWfvK755aLkh",
-                "paymentHandle": {
-                    "id": "86ad8859-11d2-477d-80f2-5996a1eed4a8",
-                    "merchantRefNum": "13995817730001164",
-                    "status": "COMPLETED",
-                    "accountId": "1004940890",
-                    "savePaymentInstrument": false,
-                    "paymentHandleToken": "SCmurWfvK755aLkh"
-                },
-                "authCode": "102301",
-                "txnTime": 1542705957000,
-                "customerIp": "10.10.12.64",
-                "description": "Magazine subscription",
-                "currencyCode": "USD",
-                "status": "COMPLETED",
-                "avsResponse": "MATCH_ADDRESS_ONLY",
-                "cvvVerification": "MATCH",
-                "availableToSettle": 0
+              "id": "3aeb9c63-6386-46a3-9f8e-f452e722228a",
+              "amount": 190,
+              "merchantRefNum": "merchantRefNum-108",
+              "settleWithAuth": false,
+              "paymentHandleToken": "SCZJg09GWSv36NLB",
+              "txnTime": "2018-12-09T11:05:24+0000",
+              "customerIp": "10.10.12.64",
+              "dupCheck": true,
+              "description": "Magazine subscription",
+              "currencyCode": "GBP",
+              "status": "COMPLETED",
+              "availableToSettle": 1900,
+              "gatewayResponse": {
+                "authCode": "135880",
+                "avsResponse": "MATCH",
+                "cvvVerification": "MATCH"
+              },
+              "merchantDescriptor": {
+                "dynamicDescriptor": "54321",
+                "phone": "333-123456789"
+              }
             }
             
 ### Get Payments by Merchant Reference number [GET /v1/payments?merchantRefNum={merchant_ref_num}]
@@ -1610,43 +1540,38 @@ Click on above to fetch the payments by merchant refernce number.
 
 + Parameter
 
-   + merchant_ref_num : `13995817730001164` -This is the merchant reference number created by the merchant and submitted as part of the request.
+   + merchant_ref_num : `merchantRefNum-145` -This is the merchant reference number created by the merchant and submitted as part of the request.
 
 + Response 200 (application/json)
 
     + Body
 
             {
-                "payments": [
-                    {
-                    "id": "c64ecbf2-a942-4f7c-b412-70217a0eb16e",
-                    "amount": 1000,
-                    "preAuth": false,
-                    "merchantRefNum": "13995817730001164",
-                    "settleWithAuth": false,
-                    "paymentHandleToken": "SCmurWfvK755aLkh",
-                    "paymentHandle": {
-                        "id": "86ad8859-11d2-477d-80f2-5996a1eed4a8",
-                        "merchantRefNum": "13995817730001164",
-                        "status": "COMPLETED",
-                        "accountId": "1004940890",
-                        "savePaymentInstrument": false,
-                        "paymentHandleToken": "SCmurWfvK755aLkh"
-                    },
-                    "authCode": "102301",
-                    "txnTime": 1542705957000,
-                    "customerIp": "10.10.12.64",
-                    "description": "Magazine subscription",
-                    "currencyCode": "USD",
-                    "status": "COMPLETED",
-                    "avsResponse": "MATCH_ADDRESS_ONLY",
-                    "cvvVerification": "MATCH",
-                    "availableToSettle": 0
-                    }
-                ]
+              "payments": [
+                {
+                  "id": "8190c675-6d68-4cd7-a29c-55b406addaeb",
+                  "amount": 40,
+                  "merchantRefNum": "merchantRefNum-145",
+                  "settleWithAuth": false,
+                  "paymentHandleToken": "SChfCGCURe5NiLIv",
+                  "authCode": "107212",
+                  "txnTime": 1544108515000,
+                  "customerIp": "10.10.12.64",
+                  "description": "Magazine subscription",
+                  "currencyCode": "GBP",
+                  "status": "COMPLETED",
+                  "avsResponse": "MATCH",
+                  "cvvVerification": "MATCH",
+                  "availableToSettle": 40,
+                  "merchantDescriptor": {
+                    "dynamicDescriptor": "54321",
+                    "phone": "333-123456789"
+                  }
+                }
+              ]
             }
             
-# Group Settlement APIs
+# Group Settlements 
 
 ## Settlements [/v1/payments/{payment_id}/settlements]
 
@@ -1673,8 +1598,8 @@ Settlement with dupCheck and merchentRefNum
     + Body
 
             {
-                "merchantRefNum": "15595817730005120",
-                "amount": "1"
+              "merchantRefNum": "merchantRefNum-117",
+              "amount": 190
             }
                         
 + Response 200 (application/json)
@@ -1682,12 +1607,12 @@ Settlement with dupCheck and merchentRefNum
     + Body
 
             {
-                "merchantRefNum": "15595817730005120",
-                "amount": 1,
-                "id": "d9bcfd85-8aa6-469d-80a3-e2ca196544da",
-                "availableToRefund": 0,
-                "txnTime": 1542019796000,
-                "status": "PENDING"
+              "merchantRefNum": "merchantRefNum-117",
+              "amount": 190,
+              "id": "a07b0597-f106-4790-9661-f0d452619f5d",
+              "availableToRefund": 190,
+              "txnTime": "2018-12-09T10:56:36+0000",
+              "status": "PENDING"
             }
             
 
@@ -1717,12 +1642,9 @@ Settlement with dupCheck and merchentRefNum
     + Body
 
             {
-                "merchantRefNum": "15595817730005120",
-                "amount": 1,
-                "id": "d9bcfd85-8aa6-469d-80a3-e2ca196544da",
-                "availableToRefund": 0,
-                "txnTime": 1542019798231,
-                "status": "CANCELLED"
+              "id": "ea49ab6c-cf9b-4efd-bde8-2fa3bb5ccd85",
+              "txnTime": "2018-12-09T11:17:29+0000",
+              "status": "CANCELLED"
             }
             
 
@@ -1732,19 +1654,19 @@ Click on Get Settlements above to see how to fetch the settlements by settlement
 
 + Parameter
 
-   + settlement_id : `d9bcfd85-8aa6-469d-80a3-e2ca196544da` - This is the ID returned in the response to the Payments request.
+   + settlement_id : `ea49ab6c-cf9b-4efd-bde8-2fa3bb5ccd85` - This is the ID returned in the response to the Payments request.
 
 + Response 200 (application/json)
 
     + Body
 
             {
-              "merchantRefNum": "15595817730005120",
-              "amount": 1000,
-              "id": "d9bcfd85-8aa6-469d-80a3-e2ca196544da",
-              "availableToRefund": 1000,
-              "txnTime": 1542787238000,
-              "status": "CANCELLED"
+              "merchantRefNum": "merchantRefNum-144",
+              "amount": 40,
+              "id": "ea49ab6c-cf9b-4efd-bde8-2fa3bb5ccd85",
+              "availableToRefund": 40,
+              "txnTime": "2018-12-09T10:56:36+0000",
+              "status": "PENDING"
             }
             
 ### Get Settlements by Merchant Reference number [GET /v1/settlements?merchantRefNum={merchant_ref_num}]
@@ -1753,7 +1675,7 @@ Click on above to fetch the Settlements by merchant refernce number.
 
 + Parameter
 
-   + merchant_ref_num : `15595817730005120` -This is the merchant reference number created by the merchant and submitted as part of the request.
+   + merchant_ref_num : `merchantRefNum-144` -This is the merchant reference number created by the merchant and submitted as part of the request.
 
 + Response 200 (application/json)
 
@@ -1762,17 +1684,17 @@ Click on above to fetch the Settlements by merchant refernce number.
             {
               "settlements": [
                 {
-                  "merchantRefNum": "15595817730005120",
-                  "amount": 1000,
-                  "id": "d9bcfd85-8aa6-469d-80a3-e2ca196544da",
-                  "availableToRefund": 1000,
-                  "txnTime": 1542787238000,
-                  "status": "CANCELLED"
+                  "merchantRefNum": "merchantRefNum-144",
+                  "amount": 40,
+                  "id": "ea49ab6c-cf9b-4efd-bde8-2fa3bb5ccd85",
+                  "availableToRefund": 40,
+                  "txnTime": "2018-12-09T10:56:36+0000",
+                  "status": "PENDING"
                 }
               ]
             }
 
-# Group Refund APIs
+# Group Refunds
 
 ## Refunds [/v1/payments/{settlement_id}/refunds]
 
@@ -1798,28 +1720,21 @@ The settlement details in case of Card payment method can be sent through Reques
     + Body
 
             {
-              "merchantRefNum": "21699917730001255",
-              "amount": 1001,
+              "merchantRefNum": "merchantRefNum-118",
+              "amount": 190,
               "dupCheck": true
             }
                         
 + Response 200 (application/json)
 
     + Body
-
+            
             {
-              "id": "3466f889-0c5c-4967-b011-bfe30c364195",
-              "merchantRefNum": "21699917730001255",
-              "amount": 1001,
-              "txnTime": 1543406639000,
-              "status": "PENDING",
-              "context": {
-                "masterMerchantId": "3148",
-                "transactionType": "REFUND",
-                "accountId": "89996498",
-                "groupType": "PMLE",
-                "paymentType": "CARDS"
-              }
+              "id": "c7ef07b2-0069-4f58-b9e2-0f4cdbc6c725",
+              "merchantRefNum": "merchantRefNum-118",
+              "amount": 190,
+              "txnTime": "2018-12-09T11:41:09+0000",
+              "status": "PENDING"
             }
             
 ### Cancel Refund [PUT /v1/refunds/{refund_id}]
@@ -1828,7 +1743,7 @@ Click on Cancel a Refund above to see how to submit a Cancel Refund request.
 
 + Parameter
 
-    + refund_id : `3466f889-0c5c-4967-b011-bfe30c364195` - This is the ID returned in the response to the Refund request
+    + refund_id : `c7ef07b2-0069-4f58-b9e2-0f4cdbc6c725` - This is the ID returned in the response to the Refund request
     
 + Request (application/json)
 
@@ -1847,15 +1762,9 @@ Click on Cancel a Refund above to see how to submit a Cancel Refund request.
     + Body
 
             {
-              "id": "d1fb46ee-2736-4ef5-a724-f263ace75374",
-              "txnTime": "2017-02-14T15:12:18Z",
-              "status": "CANCELLED",
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/accounts/123456789/refunds/d1fb46ee-2736-4ef5-a724-f263ace75374"
-                }
-              ]
+              "id": "c7ef07b2-0069-4f58-b9e2-0f4cdbc6c725",
+              "txnTime": "2018-12-10T11:19:51Z",
+              "status": "CANCELLED"
             }
             
 ### Get Refund [GET /v1/refunds/{refund_id}]
@@ -1864,17 +1773,17 @@ Click on above to fetch the Refunds by Id.
 
 + Parameter
 
-    + refund_id : `3466f889-0c5c-4967-b011-bfe30c364195` - This is the ID returned in the response to the Refund request
+    + refund_id : `c7ef07b2-0069-4f58-b9e2-0f4cdbc6c725` - This is the ID returned in the response to the Refund request
 
 + Response 200 (application/json)
 
     + Body
 
             {
-              "id": "3466f889-0c5c-4967-b011-bfe30c364195",
-              "merchantRefNum": "21699917730001255",
-              "amount": 1001,
-              "txnTime": 1543406639000,
+              "id": "c7ef07b2-0069-4f58-b9e2-0f4cdbc6c725",
+              "merchantRefNum": "merchantRefNum-118",
+              "amount": 190,
+              "txnTime": "2018-12-09T11:41:09+0000",
               "status": "PENDING"
             }
             
@@ -1884,25 +1793,25 @@ Click on above to fetch the Refunds by merchant refernce number.
 
 + Parameter
 
-   + merchant_ref_num : `21699917730001255` -This is the merchant reference number created by the merchant and submitted as part of the request.
+   + merchant_ref_num : `merchantRefNum-118` -This is the merchant reference number created by the merchant and submitted as part of the request.
 
 + Response 200 (application/json)
 
     + Body
 
             {
-                "refunds": [
-                    {
-                        "id": "3466f889-0c5c-4967-b011-bfe30c364195",
-                        "merchantRefNum": "21699917730001255",
-                        "amount": 1001,
-                        "txnTime": 1543406639000,
-                        "status": "PENDING"
-                    }
-                ]
+              "refunds": [
+                {
+                  "id": "c7ef07b2-0069-4f58-b9e2-0f4cdbc6c725",
+                  "merchantRefNum": "merchantRefNum-118",
+                  "amount": 190,
+                  "txnTime": "2018-12-09T11:41:09+0000",
+                  "status": "PENDING"
+                }
+              ]
             }
          
-# Group Standalone Credits APIs
+# Group Standalone Credits 
 
 ## Standalone Credits [/v1/standalonecredits]
 
@@ -1910,8 +1819,7 @@ Standalone Credits allow merchants to issue credits to cardholders without requi
 
 ### Post Standalone Credit [POST]
 
-- Credit with original Card information
-- Credit with Payment Token
+- Credit with original Card information with Payment Handle Token
 
 
 + Request (application/json)
@@ -1925,122 +1833,40 @@ Standalone Credits allow merchants to issue credits to cardholders without requi
     + Body
 
             {
-              "merchantRefNum": "13995817730005399",
-              "amount": 1000,
-              "dupCheck": "true",
-              "card": {
-                "cardNum": "4111111111111111",
-                "cardExpiry": {
-                  "month": 2,
-                  "year": 2019
-                }
-              },
+              "amount": 40,
+              "merchantRefNum": "merchantRefNum-151",
+              "currencyCode": "GBP",
+              "paymentHandleToken": "SC9mbfZSITB5OwDJ",
               "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto",
-              "accountId": "123456789"
-            }         
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-              "merchantRefNum": "13995817730005399",
-              "txnTime": "2017-07-06T19:59:17Z",
-              "status": "PENDING",
-              "amount": 1000,
-              "card": {
-                "type": "VI",
-                "lastDigits": "1111",
-                "cardExpiry": {
-                  "month": 2,
-                  "year": 2019
-                }
-              },
-              "profile": {
-                "firstName": "Joe",
-                "lastName": "Smith",
-                "email": "Joe.Smith@canada.com"
-              },
-              "billingDetails": {
-                "street": "100 Queen Street West",
-                "city": "Toronto",
-                "state": "ON",
-                "country": "CA",
-                "zip": "M5H2N2"
-              },
-              "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto",
-              "currencyCode": "CAD",
-              "accountId": "123456789",
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
-                }
-              ]
-            }
-            
-+ Request (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-              "merchantRefNum": "merchant 07.05.17_16",
-              "amount": 1000,
-              "dupCheck": "true",
-              "card": {
-                "paymentToken": "LTEyMzYzMjQ3ODg"
-              },
-              "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto",
-              "accountId": "123456789"
-            }  
+              "description": "Winning payment from Loto 649"
+            }    
             
 + Response 200 (application/json)
 
     + Body
 
             {
-              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-              "merchantRefNum": "merchant 07.05.17_16",
-              "txnTime": "2017-07-06T19:59:17Z",
-              "status": "PENDING",
-              "amount": 1000,
+              "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
+              "amount": 40,
+              "merchantRefNum": "merchantRefNum-151",
               "card": {
-                "type": "VI",
-                "lastDigits": "1111",
                 "cardExpiry": {
-                  "month": 2,
-                  "year": 2019
-                }
-              },
-              "profile": {
-                "firstName": "Joe",
-                "lastName": "Smith",
-                "email": "Joe.Smith@canada.com"
+                  "month": "10",
+                  "year": "2020"
+                },
+                "lastDigits": "0003"
               },
               "billingDetails": {
-                "street": "100 Queen Street West",
+                "street": "100 Queen",
+                "street2": "Unit 201",
                 "city": "Toronto",
-                "state": "ON",
                 "country": "CA",
                 "zip": "M5H2N2"
               },
               "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto",
-              "currencyCode": "CAD",
-              "accountId": "123456789",
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
-                }
-              ]
+              "currencyCode": "GBP",
+              "status": "PENDING",
+              "description": "Winning payment from Loto 649"
             }
             
 ### Cancel Standalone Credit [PUT /v1/standalonecredits/{standalone_credit_id}]
@@ -2049,7 +1875,7 @@ Click on Cancel a Standalone Credit above to see how to submit a Cancel Standalo
 
 + Parameter
 
-    + standalone_credit_id : `86dcb68d-cbd0-4878-8da7-ffc0e6554513`
+    + standalone_credit_id : `e075f2ae-dfc4-4f6d-8d89-61158367b6a6`
     
 
 + Request (application/json)
@@ -2070,15 +1896,8 @@ Click on Cancel a Standalone Credit above to see how to submit a Cancel Standalo
     + Body
 
             {
-              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-              "txnTime": "2017-02-14T15:12:18Z",
-              "status": "CANCELLED",
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
-                }
-              ]
+              "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
+              "status": "CANCELLED"
             }
             
 
@@ -2088,48 +1907,34 @@ Click on Get Standalone Credit above to see how to look up a Standalone Credit r
 
 + Parameter
 
-    + standalone_credit_id : `86dcb68d-cbd0-4878-8da7-ffc0e6554513`
+    + standalone_credit_id : `e075f2ae-dfc4-4f6d-8d89-61158367b6a6`
 
 + Response 200 (application/json)
 
     + Body
 
             {
-              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-              "merchantRefNum": "merchant 07.05.17_16",
-              "txnTime": "2017-07-06T19:59:17Z",
-              "status": "PENDING",
-              "amount": 1000,
+              "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
+              "amount": 40,
+              "merchantRefNum": "merchantRefNum-151",
               "card": {
-                "type": "VI",
-                "lastDigits": "1111",
                 "cardExpiry": {
-                  "month": 2,
-                  "year": 2019
-                }
-              },
-              "profile": {
-                "firstName": "Joe",
-                "lastName": "Smith",
-                "email": "Joe.Smith@canada.com"
+                  "month": "10",
+                  "year": "2020"
+                },
+                "lastDigits": "0003"
               },
               "billingDetails": {
-                "street": "100 Queen Street West",
+                "street": "100 Queen",
+                "street2": "Unit 201",
                 "city": "Toronto",
-                "state": "ON",
                 "country": "CA",
                 "zip": "M5H2N2"
               },
               "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto",
-              "currencyCode": "CAD",
-              "accountId": "123456789",
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
-                }
-              ]
+              "currencyCode": "GBP",
+              "status": "PENDING",
+              "description": "Winning payment from Loto 649"
             }
             
 ### Get Standalone Credit Using Merchant Reference Number  [GET /v1/standalonecredits?merchantRefNum={merchantRefNum}]
@@ -2138,63 +1943,43 @@ Click on Get Standalone Credit Using Merchant Reference Number above to see how 
 
 + Parameter
 
-   + merchantRefNum : 13995817730005399
+   + merchantRefNum : "merchantRefNum-151"
 
 + Response 200 (application/json)
 
     + Body
 
             {
-               "standalonecredits": [
+              "standaloneCredits": [
                 {
-                    "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-                    "merchantRefNum": "13995817730005399",
-                    "txnTime": "2017-07-06T19:59:17Z",
-                    "status": "PENDING",
-                    "amount": 1000,
-                    "card": {
-                        "type": "VI",
-                        "lastDigits": "1111",
-                        "cardExpiry": {
-                        "month": 2,
-                        "year": 2019
-                    }
-                },
-                "profile": {
-                    "firstName": "Joe",
-                    "lastName": "Smith",
-                    "email": "Joe.Smith@canada.com"
-                },
-                "billingDetails": {
-                    "street": "100 Queen Street West",
+                  "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
+                  "amount": 40,
+                  "merchantRefNum": "merchantRefNum-151",
+                  "card": {
+                    "cardExpiry": {
+                      "month": "10",
+                      "year": "2020"
+                    },
+                    "lastDigits": "0003"
+                  },
+                  "billingDetails": {
+                    "street": "100 Queen",
+                    "street2": "Unit 201",
                     "city": "Toronto",
-                    "state": "ON",
                     "country": "CA",
                     "zip": "M5H2N2"
-                },
-                "customerIp": "204.91.0.12",
-                "description": "Winning payment from Loto",
-                "currencyCode": "CAD",
-                "accountId": "123456789",
-                "links": [
-                   {
-                    "rel": "self",
-                    "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                  },
+                  "customerIp": "204.91.0.12",
+                  "currencyCode": "GBP",
+                  "status": "PENDING",
+                  "description": "Winning payment from Loto 649"
                 }
-                ]
-                 }
-                ],
-                "links": [
-                 {
-                    "rel": "self",
-                    "href": "https://api.test.paysafe.com/cardpayments/v1/standalonecredits?merchantRefNum=merchant 07.05.17_16&limit=2&offset=2&startDate=2017-01-14T15:12:18Z&endDate=2017-04-04T15:12:18Z"
-                }
-            ]
+              ]
             }
             
 
 
-# Group Original Credits APIs
+# Group Original Credits 
 
 ## Original Credits [/v1/originalcredits]
 
@@ -2202,8 +1987,7 @@ Original Credits allow merchants with specific merchant category codes (MCCs) to
 
 ### Original Credit [POST]
 
-- An Original Credit request using card information.
-- An Original Credit request using a payment token.
+- An Original Credit request using a Payment Handle token.
 
 + Request (application/json)
 
@@ -2216,125 +2000,41 @@ Original Credits allow merchants with specific merchant category codes (MCCs) to
     + Body
 
             {
-              "merchantRefNum": "13995817730005399",
-              "amount": 1000,
-              "dupCheck": "true",
-              "card": {
-                "cardNum": "4111111111111111",
-                "cardExpiry": {
-                  "month": 2,
-                  "year": 2019
-                }
-              },
+              "amount": 40,
+              "merchantRefNum": "merchantRefNum-151",
+              "currencyCode": "GBP",
+              "paymentHandleToken": "SC9mbfZSITB5OwDJ",
               "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto",
-              "accountId": "123456789"
-            }         
+              "description": "Winning payment from Loto 649"
+            }
+     
 + Response 200 (application/json)
 
     + Body
 
             {
-              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-              "merchantRefNum": "13995817730005399",
-              "txnTime": "2017-07-06T19:59:17Z",
-              "status": "PENDING",
-              "amount": 1000,
+              "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
+              "amount": 40,
+              "merchantRefNum": "merchantRefNum-151",
               "card": {
-                "type": "VI",
-                "lastDigits": "1111",
                 "cardExpiry": {
-                  "month": 2,
-                  "year": 2019
-                }
-              },
-              "profile": {
-                "firstName": "Joe",
-                "lastName": "Smith",
-                "email": "Joe.Smith@canada.com"
+                  "month": "10",
+                  "year": "2020"
+                },
+                "lastDigits": "0003"
               },
               "billingDetails": {
-                "street": "100 Queen Street West",
+                "street": "100 Queen",
+                "street2": "Unit 201",
                 "city": "Toronto",
-                "state": "ON",
                 "country": "CA",
                 "zip": "M5H2N2"
               },
               "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto",
-              "currencyCode": "CAD",
-              "accountId": "123456789",
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
-                }
-              ]
-            }
-            
-+ Request (application/json)
-
-    + Headers
-
-            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
-    
-    + Body
-
-            {
-              "merchantRefNum": "13995817730005399",
-              "amount": 1000,
-              "dupCheck": "true",
-              "card": {
-                "paymentToken": "LTEyMzYzMjQ3ODg"
-              },
-              "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto",
-              "accountId": "123456789"
-            }  
-            
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-              "merchantRefNum": "13995817730005399",
-              "txnTime": "2017-07-06T19:59:17Z",
+              "currencyCode": "GBP",
               "status": "PENDING",
-              "amount": 1000,
-              "card": {
-                "type": "VI",
-                "lastDigits": "1111",
-                "cardExpiry": {
-                  "month": 2,
-                  "year": 2019
-                }
-              },
-              "profile": {
-                "firstName": "Joe",
-                "lastName": "Smith",
-                "email": "Joe.Smith@canada.com"
-              },
-              "billingDetails": {
-                "street": "100 Queen Street West",
-                "city": "Toronto",
-                "state": "ON",
-                "country": "CA",
-                "zip": "M5H2N2"
-              },
-              "customerIp": "204.91.0.12",
-              "description": "Winning payment from Loto",
-              "currencyCode": "CAD",
-              "accountId": "123456789",
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
-                }
-              ]
+              "description": "Winning payment from Loto 649"
             }
-
-
 
 ### Cancel an Original Credit [PUT /v1/originalcredits/{original_credit_id}]
 
@@ -2362,15 +2062,8 @@ Click on Cancel an Original Credit above to see how to submit a Cancel Original 
     + Body
 
             {
-              "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-              "txnTime": "2017-02-14T15:12:18Z",
-              "status": "CANCELLED",
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
-                }
-              ]
+              "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
+              "status": "CANCELLED"
             }
             
 
@@ -2431,64 +2124,41 @@ Click on Get Original Credit Using Merchant Reference Number above to see how to
 
 + Parameter
 
-   + merchantRefNum : 13995817730005399 - This is the merchant reference number created by the merchant and submitted as part of the request. 
+   + merchantRefNum : merchantRefNum-151 - This is the merchant reference number created by the merchant and submitted as part of the request. 
 
 + Response 200 (application/json)
   
    + Body
 
             {
-               "originalcredits": [
+              "standaloneCredits": [
                 {
-                    "id": "86dcb68d-cbd0-4878-8da7-ffc0e6554513",
-                    "merchantRefNum": "13995817730005399",
-                    "txnTime": "2017-07-06T19:59:17Z",
-                    "status": "PENDING",
-                    "amount": 1000,
-                    "card": {
-                        "type": "VI",
-                        "lastDigits": "1111",
-                        "cardExpiry": {
-                        "month": 2,
-                        "year": 2019
-                    }
-                },
-                "profile": {
-                    "firstName": "Joe",
-                    "lastName": "Smith",
-                    "email": "Joe.Smith@canada.com"
-                },
-                "billingDetails": {
-                    "street": "100 Queen Street West",
+                  "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
+                  "amount": 40,
+                  "merchantRefNum": "merchantRefNum-151",
+                  "card": {
+                    "cardExpiry": {
+                      "month": "10",
+                      "year": "2020"
+                    },
+                    "lastDigits": "0003"
+                  },
+                  "billingDetails": {
+                    "street": "100 Queen",
+                    "street2": "Unit 201",
                     "city": "Toronto",
-                    "state": "ON",
                     "country": "CA",
                     "zip": "M5H2N2"
-                },
-                "customerIp": "204.91.0.12",
-                "description": "Winning payment from Loto",
-                "currencyCode": "CAD",
-                "accountId": "123456789",
-                "links": [
-                   {
-                    "rel": "self",
-                    "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
+                  },
+                  "customerIp": "204.91.0.12",
+                  "currencyCode": "GBP",
+                  "status": "PENDING",
+                  "description": "Winning payment from Loto 649"
                 }
-                ]
-                 }
-                ],
-                "links": [
-                 {
-                    "rel": "self",
-                    "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits?merchantRefNum=merchant 07.05.17_16&limit=2&offset=2&startDate=2017-01-14T15:12:18Z&endDate=2017-04-04T15:12:18Z"
-                }
-            ]
+              ]
             }
 
-
-
-
-# Group Customer APIs
+# Group Customers
 
 ## Create Customer [/v1/customers]
 
@@ -2614,7 +2284,9 @@ The API allows creation of single use customer token needed for cases where save
                         "month" : "12",
                         "year" : "2020"
                     },
-                    "holderName": "TEST CUSTOMER"
+                    "holderName": "TEST CUSTOMER",
+                    "cardBin": "453091",
+                    "cardType": "VI"
                 },
                 "billingAddressId": "6a275b7c-6f11-4ed1-ae77-21071724574a"
              }]
@@ -2676,6 +2348,8 @@ Note: This API will be accessible with public API key.
                         "month" : "12",
                         "year" : "2020"
                     },
+                    "cardBin": "453091",
+                    "cardType": "VI",
                     "holderName": "TEST CUSTOMER"
                 },
                 "billingAddressId": "6a275b7c-6f11-4ed1-ae77-21071724574a"
