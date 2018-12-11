@@ -1631,6 +1631,88 @@ Click on Get Original Credit Using Merchant Reference Number above to see how to
                 }
               ]
             }
+            
+# Group Void Authorizations 
+
+Void Authorization allow merchants to cancel/void authorisation. 
+
+### Void an Authorization [POST /v1/payments/{PAYMENT_ID}/voidauths]
+
+- Click on Void an Authorization above to see how to submit a Void Authorization request. You can void an Authorization only if it has not yet been settled.
+
++ Parameter
+
+    + PAYMENT_ID : `86dcb68d-cbd0-4878-8da7-ffc0e6554513` - This is the ID returned in the response to the Payment request.
+    
++ Request (application/json)
+
+    + Headers
+
+            Authorization: "Basic YOUR-BASE64-ENCODED-API-KEY"
+            
+    + Body
+
+            {
+              "amount": 900,
+              "merchantRefNum": "13915817720025003"
+            }
+     
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "50175d73-be3d-4594-b570-9095a17121de",
+              "merchantRefNum": "13915817720025003",
+              "amount": 900,
+              "txnTime": "2018-12-10T11:00:53+0000",
+              "status": "COMPLETED"
+            }
+
+### Get Void Authorization [GET /v1/voidauths/{VOID_AUTH_ID}]
+
+Click on Get Void Authorization above to see how to look up a Void Authorization request using the ID returned in the response to the original request.
+
++ Parameter
+
+   + VOID_AUTH_ID : `86dcb68d-cbd0-4878-8da7-ffc0e6554513` - This is the ID returned in the response to the void authorisation request.
+
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "id": "65bb2b2e-be2f-4ae8-9a2a-f24239309c7d",
+              "merchantRefNum": "1391581772002515624",
+              "amount": 900,
+              "txnTime": "2018-12-10T11:17:23Z",
+              "status": "COMPLETED"
+            }
+            
+### Get Void Authorization Using Merchant Reference Number [GET /v1/voidauths?merchantRefNum={MERCHANT_REF_NUM}]
+
+Click on Get Void Authorization Using Merchant Reference Number above to see how to look up a Void Authorization request using the merchant reference number used in the original request.
+
++ Parameter
+
+   + MERCHANT_REF_NUM : 1391581772002515624 - This is the merchant reference number created by the merchant and submitted as part of the request. 
+
++ Response 200 (application/json)
+  
+   + Body
+
+            {
+              "voidAuths": [
+                {
+                  "id": "65bb2b2e-be2f-4ae8-9a2a-f24239309c7d",
+                  "merchantRefNum": "1391581772002515624",
+                  "amount": 900,
+                  "txnTime": "2018-12-10T11:17:23Z",
+                  "status": "COMPLETED"
+                }
+              ]
+            }
 
 # Group Customers
 
