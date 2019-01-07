@@ -65,20 +65,19 @@ The Payments API allows merchants to process transactions using the REST protoco
 The following request types are supported:
 + [Payment Handles](#reference/payment-handles)
 + [Payments](#reference/payments)
++ [Void Authorization](#reference/void-authorizations)
 + [Settlements](#reference/settlements)
 + [Refunds](#reference/refunds)
 + [Standalone Credits](#reference/standalone-credits)
 + [Original Credits](#reference/original-credits)
 + [Verifications]()
-+ [Void Authorization](#reference/void-authorizations)
 
 
 
 ### Getting Started
 
 Paysafe **'Payments API'** makes integration with multiple payment methods possible via a single endpoint, 
-which also simplifies the development effort for a new payment method integration to a bare minimum 
-or even none in certain cases.
+which also simplifies the development effort for a new payment method integration to a bare minimum.
 
 ###### Supported Payment Methods
 The following payment methods are currently supported by the Payments API,
@@ -88,80 +87,238 @@ The following payment methods are currently supported by the Payments API,
 - Neteller
 - Paysafecard
 - Paysafecash
-- Guaranteed ACH
-- Sightline Prepaid Card
 
 ###### Payment Handle
 
-Payment Handle simplifies the integration with multiple methods by being the logical first step of a payment/credit processing.
+Payment Handle simplifies the integration with multiple payment methods by being the logical first step of a Payment/Credit processing.
 
 A Payment Handle contains the payment details of the customer including (and not limited to) payment method, amount, currency, payment instrument details, customer profile details etc. In addition, Payment Handle also has a status of its own.
 
-Payment Handle object is characterised by additional metadata information listed below, that makes handling multiple payment methods (using a single endpoint) possible.
+Payment Handle object is characterised by additional metadata information listed below which makes handling multiple payment methods (using a single endpoint) possible.
 
 + **Action** - Determines the next step of the user journey
 
    Irrespective of the payment method selected by the customer, a merchant can use this value to determine the next step of the user journey. The possible values are,
 
-   -> *NONE* – No further action is required from the customer. This is typically the case for a non-3DS card where no authentication is required from the customer after having entered valid card details. In this case, merchant can immediately make a Payments call to capture the payment.
+   -> *NONE* – No further action is required from the customer. This is typically the case for a non-3D Secure card transaction where no further authentication is required from the customer after having entered valid card details. In this case, merchant can immediately make a Payments call to capture the payment. The Payment Handle status will immediately become Payable.
    
-   -> *REDIRECT* – Customer is required to authorize the payment on a redirected page. Typically the case with 3DS cards where the customer verifies themselves on the bank website. The Payment Handle object will contain the link to which customer needs to be redirected.
+   -> *REDIRECT* – Customer is required to authorize the payment on a redirected page. Typically the case with 3D Secure card transaction where the customer verifies themselves on the bank website. In this case, the Payment Handle object will contain the link to which customer needs to be redirected. Once customer has completed the authentication successfully, the Payment Handle will transition to status 'Payable'.
 
 
-   Once customer has completed the journey/authentication as required, the Payment handle will transition to status 'Payable' and the merchant has to make a server to server ‘Payments’ request using the Payment Handle token within 15 minutes to capture the payment. Failing which, the Payment Handle will expire.<br>
+   Once the Payment Handle has become 'Payable', the merchant has to make a server to server ‘Payments’ request using the Payment Handle token within 15 minutes to capture the payment. Failing which, the Payment Handle will expire.<br>
 
 + **Usage** – Specifies whether a Payment Handle can be reused or not
 
-
-
+    Merchants can use this information to determine whether a Payment Handle can be reused or not.
+    
+   -> *SINGLE USE* –  In this case, a Payment Handle can only be used once for a subsequent Payment/Credit request. 
+   
+   -> *MULTI USE* - In this case, a Payment Handle can be used multiple times for a Payment request . Eg: Recurring transactions, subscriptions, saved cards etc.
+   
 + **Execution Mode** – Indicates whether the actual payment is expected to be completed immediately or after a time delay
+    
+    Merchants can use this information to determine whether they can receive the payment status synchronously or do they need to rely on webhooks.
+    
+   -> *SYNCHRONOUS* – The Payment status can be received by the merchant synchronously in this case. The merchant needs to poll the PROCESSING/PENDING Payments in a regular intervals.
+   
+   -> *ASYNCHRONOUS* - The actual payment is expected to be completed after a significant time delay (some hours or days. Eg: PaysafeCash) in this case. Here the merchant has to rely on webhooks to capture the payment status change.
+    
 
 
 
 ###### Card Scenarios
-Use of the Payments API for Card payments/credit requires you to collect cardholder details, such as the card number, expiry date, and CVV/CVC code on your gaming platform/website and send these to Paysafe with your API request.<br>
+Use of the Payments API for Card Payments/Credit requires you to collect cardholder details, such as the card number, expiry date, and CVV/CVC code on your gaming platform/website and send these to Paysafe with your API request.<br>
 
 
-See the scenarios below describing a number of alternative ways in which merchants can set up card payment/credit processing with Payments API.
+See the scenarios below describing a number of alternative ways in which merchants can set up Card Payment/Credit processing with Payments API.
 
 * **Scenario 1: One-off Card Payment with Settlement**
 
-This is typically used by merchants who provide immediate delivery of the service without delayed payment capture.<br>
+This is typically used by merchants (Eg: Gaming, where customer deposits money in to their player account) who provide immediate delivery of the service<br>
 
 
 **API to use:** [Payment Handles](#reference/payment-handles) + [Payments](#reference/payments)<br>
 
 
-In the above scenario, the merchant creates a payment handle and then (once the payment handle has become payable) makes a Payments call to request an authorization with a settlement. The parameter `settleWithAuth` is set to *true*. Once the authorization is made, the funds are immediately requested from the card issuer with the next Paysafe batch settlement run.
+In the above scenario, the merchant creates a Payment Handle and then (once the payment handle has become payable) makes a Payments call to request an authorization with a settlement. The parameter `settleWithAuth` is set to *true*. Once the authorization is made, the funds are immediately requested from the card issuer with the next Paysafe batch settlement run.
 
-* **Scenario 2: Card Payment only**
+* **Scenario 2: Card Payment with delayed Settlement**
 
-This is typically used by merchants who obtain authorization for an initial purchase amount and capture payments at a later stage, for example, after fulfillment of the service.<br>
+This is typically used by merchants who obtain an authorization for an initial purchase amount and capture payments at a later stage, for example, after fulfillment of the service.<br>
 
 
 **API to use:** [Payment Handles](#reference/payment-handles) + [Payments](#reference/payments) + [Settlements](#reference/settlements) <br>
 
 In the above scenario, the merchant creates a payment handle and then (once the payment handle has become payable) makes a Payments call to request an initial authorization, with the parameter `settleWithAuth` set to *false*. This enables the merchant to delay issuing the settlement (payment capture) request until the service is fulfilled. The merchant may make one or more partial settlement requests, up to the full amount on the original authorization.
 
-* **Scenario 3: Recurring Payments/Tokenization Service**
+* **Scenario 3: Card Original Credits**
 
+This is typically used by merchants who want to issue credits to their customers without a previous Payment (authorization) <br>
 
-* **Scenario 4: Card Standalone Credits**
-
-**API to use:** [Payment Handles](#reference/payment-handles) + [Standalone Credits](#reference/standalone-credits) <br>
-
-In the above scenario, the merchant creates a payment handle and then makes a Standalone Credit request once the payment handle has become 'Payable'.
-
-* **Scenario 5: Card Original Credits**
 
 **API to use:** [Payment Handles](#reference/payment-handles) + [Original Credits](#reference/original-credits)<br>
 
 In the above scenario, the merchant creates a payment handle and then makes a Original Credit request once the payment handle has become 'Payable'.
 
+* **Scenario 4: Card Standalone Credits**
+
+This is typically used by merchants (with MCC Codes other than that specified for original credits) who want to issue credits to their customers without a previous Payment (authorization) <br>
+
+
+**API to use:** [Payment Handles](#reference/payment-handles) + [Standalone Credits](#reference/standalone-credits) <br>
+
+In the above scenario, the merchant creates a payment handle and then makes a Standalone Credit request once the payment handle has become 'Payable'.
+
+
 ### Testing Instructions
 
 
 ### Error Summary
+
+##### Common Errors
+|HTTP Status Code|Error Code|Description|
+|---------|---------|---------------|
+|500|1000|An internal error occurred.|
+|502|1001|An error occurred with the external processing gateway.|
+|500|1002|An internal error occurred.|
+|500|1003|An internal error occurred.|
+|500|1007|An internal error occurred.|
+|500|1008|An internal error occurred.|
+|429|1200|The API call has been denied as it has exceeded the permissible call rate limit.|
+|401|5000|Your merchant account authentication failed. Either your store ID/password are invalid or the IP address from which you are sending the transaction has not been authorized.|
+|400|5001|The submitted currency code is invalid or your account does not support this currency.|
+|400|5003|You submitted an invalid amount with your request.|
+|400|5004|You submitted an invalid account type with your request.|
+|400|5005|You submitted an invalid operation type with your request.|
+|400|5010|The submitted country code is invalid.|
+|400|5016|The merchant account you provided cannot be found.|
+|400|5017|The merchant account you provided is disabled.|
+|402|5021|Your transaction request has been declined.|
+|400|5023|The request is not parseable.|
+|409|5031|The transaction you have submitted has already been processed.|
+|401|5040|Your merchant account is not configured for the transaction you attempted.|
+|400|5042|The merchant reference number is missing or invalid or it exceeds the maximum permissible length.|
+|400|5068|Either you submitted a request that is missing a mandatory field or the value of a field does not match the format expected.|
+|404|5269|The ID(s) specified in the URL do not correspond to the values in the system.|
+|403|5270|The credentials provided with the request do not have permission to access the requested data.|
+|406|5271|You requested a response in the 'Accept' header that is in an unsupported format.|
+|406|5272|The 'Content-Type' you specified in request header was submitted in an unsupported format.|
+|404|5273|Your client reached our application but we were unable to service your request due to an invalid URL.|
+|401|5275|The authentication credentials provided with the request have expired.|
+|401|5276|The authentication credentials provided with the request provided have been disabled.|
+|401|5277|The authentication credentials provided with the request have been locked due to multiple authentication failures.|
+|401|5278|The authentication credentials provided with the request were not accepted for an unknown reason.|
+|401|5279|The authentication credentials are invalid.|
+|401|5280|The required authentication credentials were not provided.|
+|405|5281|The request uses an action (e.g., GET, POST, or PUT) that is not supported by the resource.|
+|400|5501|The profile does not have an active credit card.|
+|400|5502|Either the payment token is invalid or the corresponding profile or bank account is not active.|
+
+##### Payment Errors
+|HTTP Status Code|Error Code|Description|
+|---------|---------|---------------|
+|400|3002|You submitted an invalid card number or brand or combination of card number and brand with your request.|
+|400|3004|The zip/postal code must be provided for an AVS check request.|
+|400|3005|You submitted an incorrect CVV value with your request.|
+|400|3006|You submitted an expired credit card number with your request.|
+|402|3007|Your request has failed the AVS check. Note that the amount has still been reserved on the customer's card and will be released in 3–5 business days. Please ensure the billing address is accurate before retrying the transaction.|
+|400|3008|You submitted a card type for which the merchant account is not configured.|
+|402|3009|Your request has been declined by the issuing bank.|
+|402|3011|Your request has been declined by the issuing bank because the card used is a restricted card. Contact the cardholder's credit card company for further investigation.|
+|402|3012|Your request has been declined by the issuing bank because the credit card expiry date submitted is invalid.|
+|402|3013|Your request has been declined by the issuing bank due to problems with the credit card account.|
+|402|3014|Your request has been declined - the issuing bank has returned an unknown response. Contact the card holder's credit card company for further investigation.|
+|402|3015|The bank has requested that you process the transaction manually by calling the cardholder's credit card company.|
+|402|3016|The bank has requested that you retrieve the card from the cardholder – it may be a lost or stolen card.|
+|402|3017|You submitted an invalid credit card number with your request.|
+|402|3018|The bank has requested that you retry the transaction.|
+|402|3019|Your request has failed the CVV check. Please note that the amount may still have been reserved on the customer's card, in which case it will be released in 3–5 business days.|
+|402|3020|The bank has requested that you retry the transaction.|
+|404|3021|The confirmation number included in this request could not be found.|
+|402|3022|The card has been declined due to insufficient funds.|
+|402|3023|Your request has been declined by the issuing bank due to its proprietary card activity regulations.|
+|402|3024|Your request has been declined because the issuing bank does not permit the transaction for this card.|
+|400|3025|The external processing gateway has reported invalid data.|
+|400|3026|The external processing gateway has reported the account type is invalid.|
+|402|3027|The external processing gateway has reported a limit has been exceeded.|
+|502|3028|The external processing gateway has reported a system error.|
+|402|3029|The external processing gateway has rejected the transaction.|
+|402|3030|The external processing gateway has reported the transaction is unauthorized.|
+|400|3031|The confirmation number you submitted with your request references a transaction that is not on hold.|
+|402|3032|Your request has been declined by the issuing bank or external gateway because the card is probably in one of their negative databases.|
+|402|3035|Your request has been declined due to exceeded PIN attempts.|
+|402|3036|Your request has been declined due to an invalid issuer.|
+|402|3037|Your request has been declined because it is invalid.|
+|402|3038|Your request has been declined due to customer cancellation.|
+|402|3039|Your request has been declined due to an invalid authentication value.|
+|402|3040|Your request has been declined because the request type is not permitted on the card.|
+|402|3041|Your request has been declined due to a timeout.|
+|402|3042|Your request has been declined due to a cryptographic error.|
+|402|3044|You have submitted a duplicate request.|
+|402|3045|You submitted an invalid date format for this request.|
+|402|3046|The transaction was declined because the amount was set to zero.|
+|402|3047|The transaction was declined because the amount exceeds the floor limit.|
+|402|3048|The transaction was declined because the amount is less than the floor limit.|
+|402|3049|The bank has requested that you retrieve the card from the cardholder – the credit card has expired.|
+|402|3050|The bank has requested that you retrieve the card from the cardholder – fraudulent activity is suspected.|
+|402|3051|The bank has requested that you retrieve the card from the cardholder – contact the acquirer for more information.|
+|402|3052|The bank has requested that you retrieve the card from the cardholder – the credit card is restricted.|
+|402|3053|The bank has requested that you retrieve the card from the cardholder – please call the acquirer.|
+|402|3054|The transaction was declined due to suspected fraud.|
+|402|3055|This type of transaction is not supported.|
+|402|3056|The original transaction type does not match.|
+|402|3057|Please tell cardholder to call the issuer – do not retry transaction.|
+
+##### Void Authorization Errors
+|HTTP Status Code|Error Code|Description|
+|---------|---------|---------------|
+|400|3500|The confirmation number included in this request could not be found.|
+|402|3501|The requested void (Authorization Reversal) amount exceeds the remaining Authorization amount.|
+|402|3502|You cannot process a void (Authorization Reversal) transaction against an Authorization that has been settled.|
+|402|3503|The void (Authorization Reversal) transaction is not supported for the card type used for the Authorization you are attempting to void.|
+|402|3504|The external processing gateway for which your merchant account is configured does not support partial voids (Authorization Reversals).|
+|500|3505|The void (Authorization Reversal) could not be completed.|
+|402|3506|The void (Authorization Reversal) amount exceeds the remaining amount of the Authorization.|
+
+##### Settlement Errors
+|HTTP Status Code|Error Code|Description|
+|---------|---------|---------------|
+|400|3200|You have submitted an invalidly formatted Authorization ID for this Settlement.|
+|404|3201|The Authorization ID included in this Settlement request could not be found.|
+|402|3202|You have exceeded the maximum number of Settlements allowed.|
+|402|3203|The Authorization is either fully settled or cancelled.|
+|402|3204|The requested Settlement amount exceeds the remaining Authorization amount.|
+|402|3205|The Authorization you are attempting to settle has expired.|
+|402|3206|The external processing gateway has rejected the transaction.|
+|402|3207|Due to issuer policies, this type of transaction is not allowed.|
+
+##### Refund Errors
+|HTTP Status Code|Error Code|Description|
+|---------|---------|---------------|
+|402|3402|The requested Refund amount exceeds the remaining Settlement amount.|
+|402|3403|You have already processed the maximum number of refunds allowed for this Settlement.|
+|402|3404|The Settlement has already been fully refunded.|
+|402|3405|The Settlement you are attempting to Refund has expired.|
+|402|3406|The Settlement you are attempting to Refund has not been batched yet. There are no settled funds available to Refund.|
+|400|3407|The Settlement referred to by the transaction response ID you provided cannot be found.|
+|400|3408|You have submitted an invalidly formatted response ID for the original Purchase or Settlement.|
+|402|3412|The Refund transaction you attempted was not permitted because your merchant account is in overdraft.|
+|402|3413|The requested Refund amount exceeds the permissible Visa credit ratio.|
+|400|3414|The Refund referred to by the transaction response ID you provided cannot be found.|
+|402|3415|You cannot cancel this transaction as it is no longer in a pending state.|
+|402|3416|The external processing gateway for which your merchant account is configured does not support partial Settlements.|
+|402|3417|There is already another request being processed on the transaction referenced for this request.|
+|402|3418|The external processing gateway for which your merchant account is configured does not support partial Credits.|
+|402|3419|This type of transaction cannot be refunded.|
+
+### Using the Example API Calls (Console Window)
+
+To configure and test the API examples, first click on one of the API calls in the API Reference section and then click **Switch to Console** in the right hand pane. Using the Console window you can update the headers, the request body, and parts of the API endpoint. For example, for many lookup requests you must update the endpoint to include your request ID (Eg: payment_id), which you do by selecting **URI Parameters** and then updating the respective id value. You must also update the Header to include your API Key by selecting **Headers** and then updating the **Authorization** value using the Base64 version of your API key. To get your API key, log into the Test version of the Merchant Portal and choose **Developer Center > API Keys**. Copy the Secret key to your clipboard. Paste the key after the word Basic to replace the text YOUR-BASE64-ENCODED-API-KEY. When you are ready to test your example, you can choose between the Production and Mock server environment:
+
+- Production server – This calls the resource on Paysafe's Test system.
+- Mock server – This environment simply returns the dummy values in the example response irrespective of the parameters you supply. You do not need to use your account ID or Test API key for this request.
+
+To call the API resource, click **Call Resource**. The response is displayed in the Console window.
 
 # Data Structures
 
