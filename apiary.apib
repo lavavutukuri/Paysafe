@@ -223,7 +223,6 @@ In the above scenario, the merchant creates a payment handle and then makes a Or
 + responseId -This is the response ID assigned by Credorax.
 + requestId -This is the request ID assigned by NETBANX.
 + description -This is a description of the response.
-+ authCode -This is the authorization code.
 + txnDateTime -This is the transaction date and time.
 + referenceNbr -Bank net transaction Id/Merch Tran Ref
 + responseReasonCode -This is the raw response reason code returned by Credorax.
@@ -304,15 +303,22 @@ In the above scenario, the merchant creates a payment handle and then makes a Or
     + field -Field name.
     + error -Error associated with the field name.
 
+## paymentHandleStatusAttributes (enum)
++ INITIATED - This is the initial state once the Payment handle created.
++ PROCESSING - Payment Handle was authorized by customer, awaiting PSP response.
++ PAYABLE - The merchant can proceed next transaction actions (like payments, standalonecredits, originalcredits etc.) using this payment handle.
++ FAILED - The transaction failed, due to either an error or being declined. 
++ EXPIRED - The payment handle got expired due to merchant not proceeding with transaction payments post.
++ COMPLETED - Next transaction (Payments/Standalonecredit/OriginalCredit) call was initiated successfully using the payment Handle.
+
 ## statusAttributes (enum)
 + RECEIVED - Our system has received the request and is waiting for the downstream processor’s response.
 + INITIATED - The transaction was initiated with the downstream provider.
-+ PAYABLE - The merchant can proceed with payments post request.
-+ PROCESSING - Payment Handle was authorized by customer, awaiting PSP response.
++ PENDING - The transaction awaiting PSP response.
 + FAILED - The transaction failed, due to either an error or being declined. 
 + CANCELLED - The authorization request has been fully reversed.
-+ EXPIRED - The payment handle got expired due to merchant not proceeding with transaction payments post.
-+ COMPLETED - Payments call was initiated successfully using the payment Handle.
++ EXPIRED - The transaction got expired.
++ COMPLETED - The transaction got completed.
 
 ## consumerOperationAttributes(enum)
 + ADD - Consumer wants to save the payment instrument to the profile.
@@ -327,35 +333,32 @@ In the above scenario, the merchant creates a payment handle and then makes a Or
 
 ## PaymentHandleRequest (object)
 
-+ id: `length <=36`(required) - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Payments.
-+ paymentHandleTokenFrom: `length <= 36` - This is the existing payment handle id, from which payment instrument and profile details has to be fetched.
-+ merchantRefNum: `length <= 100` - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
-+ consumerOperation(consumerOperationAttributes) -Either consumerOperation or transactionType is Mandatory. This is the consumer operation on the payment instrument.
-+ singleUseProfileToken - This is the single use profile token of the profile on which consumer operation (ADD/EDIT/DELETE) need to be done.
-+ transactionType(transactionTypeAttributes) - This specifies for which transaction type Payment Handle is created.
-+ status(statusAttributes) - This is the status of the transaction request.
++ id: `length <=36` - This is the ID returned in the response. This ID can be used to retrive the payment handle details using associated GET call.
++ merchantRefNum: `length <= 100` - This is the merchant reference number created by the merchant and submitted as part of the request. It's recommended to provide unique for each request.
++ transactionType (transactionTypeAttributes, required) - This specifies for which transaction type Payment Handle is created.
++ status (paymentHandleStatusAttributes) - This is the status of the payment handle.
 + usage (enum) - Payment handle usage - whether single of multi use
-    + SINGLE_USE - The payment handle can be used only once for transaction, it gets expired after due time.
+    + SINGLE_USE - The payment handle can be used only once for a transactions (like payments, standalonecredits etc.), it gets expired after due time.
     + MULTI_USE - The payment handle can be used multiple times like recurring/subscription payments.
-+ paymentType (enum)(required) - The related payment Type/Channel/Method associated with this handle
++ paymentType (enum, required) - The related payment Type/Channel/Method associated with this handle
     + CARD
     + SKRILL
     + NETELLER
     + PAYSAFE_CASH
     + PAYSAFE_CARD
-+ action (enum) - The associated action that needs to be done by merchant for this handle
++ action (enum) - The associated action that needs to be done by merchant for this payment handle to make it PAYABLE
     + NONE - No action is required. Typical for card flows without 3DS.
-    + REDIRECT - The integration needs to redirect the user to a specific APM for completion of a payment or getting necessary details to complete a payment, or to complete an OAuth registration flow in case of creation of multi use payment handle. Typical for most APMs.
+    + REDIRECT - The integration needs to redirect the user to a specific APM for completion of a payment or getting necessary details to complete a payment, or to complete an OAuth registration flow in case of creation of multi use payment handle. Typical for most APMs and 3DS cards.
     + AUTHENTICATE - In case of APMs with deep integrations, this action indicates customer needs to key in an OTP(One Time Password) or a specific code to verify the ownership or authorize a top up. The code is validated against the code received from the APM. This is typically used in APMs that need 2 factor authentication. 
-+ executionMode (enum) - The type of execution of the payment
-    + ASYNCHRONOUS - For some payment types the actual payment will differently be completed after some hours or days, where customer has to complete it offline. In this case Merchant has to rely on Webhooks, which will get the Payment success/fail event.
-    + SYNCHRONOUS - In case the status of the Payment call will be returned to Merchant Synchronously. Example : Cards (with 3DS and without 3DS), Skrill, Neteller, Paysafe Card. In these cases Is it OK for Merchant to poll the PROCESSING/PENDING Payments in a regular intervals.
++ executionMode (enum) - Execution mode indicates the kind of interaction that merchant server needs to adhere to complete the transaction (payment/credit)
+    + ASYNCHRONOUS - For some payment types the actual payment/credit will differently be completed after some hours or days, where customer has to complete it offline. In this case Merchant has to rely on Webhooks, which will get the Payment success/fail event.
+    + SYNCHRONOUS - In case the status of the Transaction (payment/credit) call will be returned to Merchant Synchronously. Example : Cards (with 3DS and without 3DS), Skrill, Neteller, Paysafe Card. In these cases Is it OK for Merchant to poll the PROCESSING/PENDING Payments in a regular intervals.
 + amount: 100 - Max =99999999999 This is the amount of the request, in minor units.
-+ currencyCode: CAD - Max = 3 This is the currency of the merchant account, e.g., USD or CAD, returned in the request response.
-+ paymentHandleToken - The handle token generated by our system which will be used by merchants for payments post later.
++ currencyCode: CAD - Max = 3 This is the currency of the transaction.
++ paymentHandleToken - The handle token generated by our system which will be used by merchants for next transaction steps.
 + card (object) - These are the details of the card used for the request.
     + cardNum - Min = 8,Max = 20 This is the card number used for the request.
-    + cardType (enum) - This is type of card used for the request.
+    + cardType (enum) - This will be present in the responce which specifies the type of card provided.
         - AM – American Express
         - DC – Diners Club
         - DI – Discover
@@ -367,25 +370,14 @@ In the above scenario, the merchant creates a payment handle and then makes a Or
         - VI – Visa
         - VD – Visa Debit
         - VE – Visa Electron
-    + lastDigits - Size=4 This is the last four digits of the card used for the request.
+    + lastDigits - Size=4 Last 4 digits of the card number will be sent in the response.
     + cardExpiry - This is the card's expiry date.
         + month - length=2 This is the card expiry month.
         + year - length=4 This is the card expiry year.
     + cvv - Min = 3,Max = 4 This is the 3- or 4-digit security code that appears on the card following the card number.
     + holderName - This is name of the card holder.
-    + status - This is the status.
     + nickName - This is the nick name of the card holder.
-    + cardBin (optional,number) - This is card bin.
-+ profile - Customer information is mandatory if savePaymentInstrument is set to true
- - id: Gt56fR6 - Id is enough, and if id is not present, customer details like firstName, lastName, email ... has to be provided,if id is specified, the additional details provided will be overwritten to existing customer profile?
- - status - The status of customer in the system, returned in the response.
- - merchantCustomerId - length = 255 This is the reference number for the customer created by the merchant and submitted as part of the request. It must be unique for each customer.
- - firstName: test - length<=80 This is the customer’s first name.
- - lastname: user - length<=80 This is the customer's last name.
- - locale - Customer's locale preference
- - dateOfBirth: year,month,day(array)
- - email: john.smith@email.com - length<=255 This is the customer's email address.
- - phone:12345678
+    + cardBin (number) - This is card bin provided in the response.
 + billingDetails - These are the billing details for the request.
  - street: 100 queen - length<=50 This is the first line of the street address in the billing address.
  - street2: unit 201 - length<=50 This is the second line of the street address in the billing address, if required (e.g., apartment number).
@@ -411,7 +403,7 @@ In the above scenario, the merchant creates a payment handle and then makes a Or
 ## PaymentsRequest (object)
 
 +  id: `length <=36` read only - This is the ID returned in the response. This ID can be used for future associated requests, e,g., Settlements.
-+ merchantRefNum: `length <= 255`(required) - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
++ merchantRefNum: `length <= 255`(required) - This is the merchant reference number created by the merchant and submitted as part of the request. It's recommended to be unique for a single transaction.
 + amount: 100 - Max =99999999999(required)  This is the amount of the request, in minor units.
 + dupCheck: true (boolean) - This validates that this request is not a duplicate. A request is considered a duplicate if the merchantRefNum has already been used in a previous request within the past 90 days.
 + settleWithAuth: true (boolean) - This indicates whether the request is an Authorization only (no Settlement), or a Purchase (Authorization and Settlement).
@@ -423,14 +415,13 @@ In the above scenario, the merchant creates a payment handle and then makes a Or
     + partialAuth.requested (boolean) -This specifies whether partial auth is requested or not.
     + partialAuth.amountDue (number) -This is the amount for which auth is not provided.
     + partialAuth.orginalAmount (number) -This is the actual amount for which authorization is asked.
-+ paymentHandleToken (string) - This is the payment handle token.
-+ paymentHandle (PaymentHandleRequest) - This is the Payment Handle details.
-+ availableToSettle (number) -This is the amount of of the Authorization remaining to settle, in minor units.
++ paymentHandleToken (string, required) - This is the payment handle token.
++ availableToSettle (number) -This is the amount of the Authorization remaining to settle, in minor units.
 + childAccountNum : `length <= 10` -This is the child merchant account number. It is returned only if the transaction was processed via a master account.
 + customerIp - `length<=39` -This is the customer's IP address.
 + description: `length<=255` -This is a description of the transaction, provided by the merchant.
 + status (statusAttributes) - This is the status of the transaction request.
-+ currencyCode: CAD - Max = 3 This is the currency of the merchant account, e.g., USD or CAD, returned in the request response.
++ currencyCode: CAD - Max = 3 This is the currency of the transaction.
 + level2Level3(level2Level3Request) - This allows merchants who are enabled to provide additional L2/L3 transaction data.
         Not all processing gateways support this parameter. Contact your account manager for more information.
 + gatewayResponse(gatewayRequest) - This is the raw response returned by an acquirer. It is returned only if your account is configured accordingly.
@@ -446,45 +437,21 @@ Using a card number – An authorization request that uses a credit card number 
 + merchantDescriptor(merchantDescriptorAttributes) - This is the merchant descriptor that will be displayed on the customer's card statement.
         Not all processing gateways support this parameter. Contact your account manager for more information.
 + settlements (array) - This is the list of all settlements. This will be returned only if settleWithAuth=true in the request.
-+ acquirerData(acquirerDataAttributes) - This is additional information about the card acquirer required when you are performing an original credit request.
-        This object is required only when you are using Credorax (CRX) as your acquirer for Original Credits. Contact your account manager for details.
 + error(errorAttributes) - Details of the error.
-+ metadata(metadataAttributes) - This allows the merchant to specify additional data (e.g., affiliate codes, session IDs, etc.) to be stored against the transaction and returned to in status calls, reports, etc.
-        Up to 10 metadata key/value pairs are enabled per order. They do not need to be defined in advance and can be different on each transaction.
 + statusReason - This is reason for the status. This is present in case of ERROR, FAILURE, HELD status.
 + authentication(authenticationAttributes) - This is the 3DS authentication details.
 
 
 ## OriginalCreditResponse (object)
-+ id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
++ id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used to retrieve the details with associate GET call.
 + merchantRefNum: P1234 (required) - length<=255 This is the merchant reference number created by the merchant and submitted as part of the request.
 + paymentHandleToken: `length <= 36` - This is the payment handle token returned in Payment Handle response for which credit has to be done.
 + amount: 100 (required) - max=99999999999 This is the amount of the request, in minor units.
-+ card (object) - These are the details of the card used for the request.Only one card object can be included in the request.
-    + card (object) - These are the details of the card used for the request.Only one card object can be included in the request.   
-    + cardNum (): 4111111111111111 (required) - length=8-20 This is the card number used for the request.
-        + cardExpiry (required) - This is the card's expiry date.
-        + month:12 (number, required) - This is the card expiry month. length=2
-        + year:2020 (number, required) - This is the card expiry year. length=4
-    + cvv - This is the 3- or 4-digit security code that appears on the card following the card number.
-    + track1 - This is Track 1 information read from the card's magnetic stripe.
-    + track2 - This is Track 2 information read from the card's magnetic stripe.`
++ currencyCode: CAD - Max = 3 This is the currency of the transaction.
 + dupCheck: true (boolean) - This validates that this request is not a duplicate. A request is considered a duplicate if the merchantRefNum has already been used in a previous request within the past 90 days.
++ status (statusAttributes) - This is the status of the transaction request.
 + description: Purchase Credit - This is a description of the transaction, provided by the merchant. length<=255
 + customerIp: 204.91.0.12 -This is the customer's IP address.length<=39
-+ accountId: 123456789 (optional) -This is the merchant account number.
-+ profile - These are some details about the customer.
- - firstName: test -  This is the customer’s first name. length<=80
- - lastname: user -  This is the customer's last name. length<=80
- - email: john.smith@email.com -  This is the customer's email address. length<=255
-+ billingAddress - These are the billing details for the request.
- - street: 100 queen - length<=50 This is the first line of the street address in the billing address.
- - street2: unit 201 - length<=50 This is the second line of the street address in the billing address, if required (e.g., apartment number).
- - city: Toronto - This is the city in the billing address. length<=40
- - zip: MSH 2N2 - This is the postal/zip code in the billing address. length<=10
- - country: CA - Size = 2
- - state: ON - Use the 2-character state or province codes for Canada or the United States. length<=40
- - phone - This is the customer's telephone number. length<=40
 
 ## RefundResponse (object)
 + id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
@@ -498,7 +465,6 @@ Using a card number – An authorization request that uses a credit card number 
 + splitPay (splitpayAttributes) - NOTE: For splitpay transactions only.
         An array containing the linked accounts and the amount shared with each. You must include either amount or percent. However, you cannot include both values.
 + riskReasonCode (array) - An array of integers is returned, displaying the detailed risk reason codes if your transaction was declined. It is returned only if your account is configured accordingly.        
-+ gatewayResponse(gatewayRequest) - This is the raw response returned by an acquirer. It is returned only if your account is configured accordingly.
 
 
 ## SettlementResponse (object)
@@ -512,76 +478,22 @@ Using a card number – An authorization request that uses a credit card number 
 + error(errorAttributes) - Details of the error.
 + splitPay (splitpayAttributes) - NOTE: For splitpay transactions only.
         An array containing the linked accounts and the amount shared with each. You must include either amount or percent. However, you cannot include both values.
-+ riskReasonCode (array) - An array of integers is returned, displaying the detailed risk reason codes if your transaction was declined. It is returned only if your account is configured accordingly.        
-+ gatewayResponse(gatewayRequest) - This is the raw response returned by an acquirer. It is returned only if your account is configured accordingly.
 
 ## voidAuthResponse (object)
-+ id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response. This ID can be used for future associated requests, e,g., Refunds.
++ id: 25f6dadf-176a-415f-95c9-6ff39ff697ba - Read Only, length<=36    This is the ID returned in the response.
 + merchantRefNum: P1234 (required) - length<=255 This is the merchant reference number created by the merchant and submitted as part of the request.
 + amount: 100 (required) - max=99999999999 This is the amount of the request, in minor units.
++ status (statusAttributes) -  This is the status of the transaction.
 
 ## VerificationResponse (object)
 + id: `length <= 36` - This is the ID returned in the response. This ID can be used for looking up a Verification request.
 + paymentHandleToken: `length <= 36` - This is the payment handle token for which verification has to be done.
 + merchantRefNum: `length <= 255` - This is the merchant reference number created by the merchant and submitted as part of the request. It must be unique for each request.
-+ card (object) - These are the details of the card used for the request.
-    + cardNum - Min = 8,Max = 20 This is the card number used for the request.
-    + cardType (enum) - This is type of card used for the request.
-        - AM – American Express
-        - DC – Diners Club
-        - DI – Discover
-        - JC – JCB
-        - MC – MasterCard
-        - MD – Maestro
-        - SF – Swiff
-        - SO – Solo
-        - VI – Visa
-        - VD – Visa Debit
-        - VE – Visa Electron
-    + lastDigits - Size=4 This is the last four digits of the card used for the request.
-    + cardExpiry - This is the card's expiry date.
-        + month - length=2 This is the card expiry month.
-        + year - length=4 This is the card expiry year.
-    + cvv - Min = 3,Max = 4 This is the 3- or 4-digit security code that appears on the card following the card number.
-    + holderName - This is name of the card holder.
-    + status - This is the status.
-    + nickName - This is the nick name of the card holder.
-    + cardBin (optional,number) - This is card bin.
-+ profile - Customer information is mandatory if savePaymentInstrument is set to true
- - id: Gt56fR6 - Id is enough, and if id is not present, customer details like firstName, lastName, email ... has to be provided,if id is specified, the additional details provided will be overwritten to existing customer profile?
- - status - The status of customer in the system, returned in the response.
- - merchantCustomerId - length = 255 This is the reference number for the customer created by the merchant and submitted as part of the request. It must be unique for each customer.
- - firstName: test - length<=80 This is the customer’s first name.
- - lastname: user - length<=80 This is the customer's last name.
- - locale - Customer's locale preference
- - dateOfBirth: year,month,day(array)
- - email: john.smith@email.com - length<=255 This is the customer's email address.
- - phone:12345678
-+ billingDetails - These are the billing details for the request.
- - street: 100 queen - length<=50 This is the first line of the street address in the billing address.
- - street2: unit 201 - length<=50 This is the second line of the street address in the billing address, if required (e.g., apartment number).
- - city: Toronto - length<=40 This is the city in the billing address.
- - zip: MSH 2N2 - length<=10 This is the postal/zip code in the billing address.
- - country: CA - Size = 2
- - state: ON - length<=40 Use the 2-character state or province codes for Canada or the United States.
 + customerIp - length<=39 This is the customer's IP address.
 + dupCheck: true (boolean) - This validates that this request is not a duplicate. A request is considered a duplicate if the merchantRefNum has already been used in a previous request within the past 90 days.
 + description: `length<=255` -This is a description of the transaction, provided by the merchant.
 + txnTime : `date` - This is the date and time the transaction was processed.For example, 2018-11-27T09:12:11Z
-+ authCode : `length <= 50` - This is the Authorization code assigned by the issuing bank and returned in the response.
 + currencyCode: CAD - Max = 3 This is the currency of the merchant account, e.g., USD or CAD, returned in the request response.
-+ avsResponse (enum) - This is the AVS response from the card issuer.
-    + MATCH
-    + MATCH_ADDRESS_ONLY
-    + MATCH_ZIP_ONLY
-    + NO_MATCH
-    + NOT_PROCESSED
-    + UNKNOWN
-+ cvvVerification (enum) - This is the response to the cvv submitted with the transaction request.
-    + MATCH
-    + NO_MATCH
-    + NOT_PROCESSED
-    + UNKNOWN
 + status (statusAttributes) - This is the status of the transaction request.
 + gatewayResponse(gatewayRequest) - This is the raw response returned by an acquirer. It is returned only if your account is configured accordingly.
 + error(errorAttributes) - Details of the error.
@@ -591,14 +503,13 @@ Using a card number – An authorization request that uses a credit card number 
 
 ## Fetch Available Payment Methods [/v1/paymentmethods]
 
-### Payment Methods [GET /v1/paymentmethods?customerCountry={customerCountry}&currency={currency}]
+### Payment Methods [GET /v1/paymentmethods?currencyCode={currencyCode}]
 
-This API will provide all the available payment methods for the Merchant. Merchant can have his own configuration defined at Paysafe side, which will be used to filter the payment methods based on amount and currency.
+Click on **Fetch Available Payment Methods** above to see how to get the list of all available payment methods that are enabled for your account. 
 
 + Parameter
 
-    + customerCountry
-    + currency
+    + currencyCode  :`USD` - Available payment methods will be filtered based on currency code provided. If this parameter is not provided API will return all the payment methods for different currencies.
     
 + Request (application/json)
 
@@ -611,23 +522,21 @@ This API will provide all the available payment methods for the Merchant. Mercha
     + Body
 
             {
-                "currency" : "CAD",
-                "customerCountry" : "USA",
                 "paymentMethods": [
                 {
-                  "name": "Card",
+                  "paymentMethod": "CARD",
+                  "currency": "USD",
+                  "accountId": 1009355920
                 },
                 {
-                  "name" : "Skrill",
+                  "paymentMethod": "SKRILL",
+                  "currency": "USD",
+                  "accountId": 1009355921
                 },
                 {
-                  "name" : "Neteller",
-                },
-                {
-                  "name" : "Paysafecash",
-                },
-                {
-                  "name" : "Paysafecard",
+                  "paymentMethod": "NETELLER",
+                  "currency": "USD",
+                  "accountId": 1009355923
                 }
               ]
             }
@@ -637,13 +546,14 @@ This API will provide all the available payment methods for the Merchant. Mercha
 
 ## Payment Handle [/v1/paymenthandles]
 
-PaymentHandle is a contract of a Payment, which contains customer's payment instrument and other details like amount, payment method, customer profile etc. This accepts a variety of payment methods with a single API. 
-<br>
-Payment Handle has its own states. Payment can be initiated on this Payment Handle only if the status is PAYABLE.
-
 ### Create Payment Handle [POST]
 
-Creates a new Payment Handle object.
+Click on **Create Payment Handle** above to see four examples of a Payment Handle request:
+
+- Create Payment Handle for non-3DS Card Payments
+- Create Payment Handle for 3DS Card Payments
+- Create Payment Handle for Standalone Credits or Original Credits
+- Create Payment Handle for Card Verifications
 
     
 
@@ -686,12 +596,12 @@ Creates a new Payment Handle object.
               "returnLinks": [
                 {
                   "rel": "on_completed",
-                  "href": "https://usgaminggamblig/payment/return/success",
+                  "href": "https://usgaminggamblig.com/payment/return/success",
                   "method": "GET"
                 },
                 {
                   "rel": "on_failed",
-                  "href": "https://usgaminggamblig/payment/return/failed",
+                  "href": "https://usgaminggamblig.com/payment/return/failed",
                   "method": "GET"
                 }
               ]
@@ -734,12 +644,12 @@ Creates a new Payment Handle object.
               "returnLinks": [
                 {
                   "rel": "on_completed",
-                  "href": "https://usgaminggamblig/payment/return/success",
+                  "href": "https://usgaminggamblig.com/payment/return/success",
                   "method": "GET"
                 },
                 {
                   "rel": "on_failed",
-                  "href": "https://usgaminggamblig/payment/return/failed",
+                  "href": "https://usgaminggamblig.com/payment/return/failed",
                   "method": "GET"
                 }
               ],
@@ -782,12 +692,12 @@ Creates a new Payment Handle object.
               "returnLinks": [
                 {
                   "rel": "on_completed",
-                  "href": "https://usgaminggamblig/payment/return/success",
+                  "href": "https://usgaminggamblig.com/payment/return/success",
                   "method": "GET"
                 },
                 {
                   "rel": "on_failed",
-                  "href": "https://usgaminggamblig/payment/return/failed",
+                  "href": "https://usgaminggamblig.com/payment/return/failed",
                   "method": "GET"
                 }
               ]
@@ -830,12 +740,12 @@ Creates a new Payment Handle object.
               "returnLinks": [
                 {
                   "rel": "on_completed",
-                  "href": "https://usgaminggamblig/payment/return/success",
+                  "href": "https://usgaminggamblig.com/payment/return/success",
                   "method": "GET"
                 },
                 {
                   "rel": "on_failed",
-                  "href": "https://usgaminggamblig/payment/return/failed",
+                  "href": "https://usgaminggamblig.com/payment/return/failed",
                   "method": "GET"
                 },
                 {
@@ -990,7 +900,7 @@ Creates a new Payment Handle object.
 
 ### Get Payment Handle [GET /v1/paymenthandles/{paymenthandle_id}]
 
-Fetch an existing payment handle object, using the unique payment handle ID returned during payment handle creation request.
+Click on **Get Payment Handle** above to see how to look up a Payment Handle request using the ID returned in the response to the original request.
 
 + Parameter
 
@@ -1046,19 +956,20 @@ Fetch an existing payment handle object, using the unique payment handle ID retu
               ]
             }
 
-### Get Payment Handle by Merchant Reference Number [GET /v1/paymenthandles?merchantRefNum={merchant_ref_num}]
+### Get Payment Handles by Merchant Reference Number [GET /v1/paymenthandles?merchantRefNum={merchant_ref_num}]
 
-Fetch an existing payment handle object, using the merchant genereated unique id used during payment handle creation request.
+Click on **Get Payment Handles by Merchant Reference Number** above to see how to look up a Payment Handle using the merchant reference number used in the original request.
 
 + Parameter
 
-    + merchant_ref_num : `13995817730005389` - This is the ID returned in the response to the Payment handle request.
+    + merchant_ref_num : `13995817730005389` - This is the merchant reference number provided in the request while creating payment handle.
 
 + Response 200 (application/json)
 
     + Body
 
             {
+              "paymenthandles": [{
               "id": "cc719995-59ed-4146-a936-b54db72bcaa8",
               "amount": 1900,
               "merchantRefNum": "merchantRefNum-130",
@@ -1101,7 +1012,7 @@ Fetch an existing payment handle object, using the merchant genereated unique id
                   "method": "GET"
                 }
               ]
-            }
+            }}
 
 # Group Payments
 
@@ -1110,11 +1021,11 @@ Fetch an existing payment handle object, using the merchant genereated unique id
 Payments is used to authorize an amount. The authorized amount must be settled in a subsequent settlement transaction.
 For Purchase requests. i.e., requests which authorizes and settles in the same request, set the settleWithAuth  parameter to true.
 
-
 ### Create Payment with Payment Handle Token [POST]
 
-- An Payment request that will have to be settled later
-- A purchase/sale request, which authorizes and settles the payment in a single request by setting the settleWithAuth parameter to true
+Click on **Payments** above to see two examples of a Payment request:
+- A Payment request that will have to be settled later
+- A Payment request, which authorizes and settles the payment in a single request by setting the settleWithAuth parameter to true
 
 
 + Request Card Payment with Payment Handle (application/json)
@@ -1168,7 +1079,7 @@ For Purchase requests. i.e., requests which authorizes and settles in the same r
 
 ### Get Payments [GET /v1/payments/{payment_id}]
 
-Click on Get Payments above to see how to fetch the payments by payment_id.
+Click on **Get Payments** above to see how to look up a Payments request using the ID returned in the response to the original request.
 
 + Parameter
 
@@ -1204,11 +1115,12 @@ Click on Get Payments above to see how to fetch the payments by payment_id.
             
 ### Get Payments by Merchant Reference number [GET /v1/payments?merchantRefNum={merchant_ref_num}]
 
-Click on above to fetch the payments by merchant refernce number.
+Click on **Get Payments by Merchant Reference Number** above to see how to look up a Payment using the merchant reference number used in the original request.
+
 
 + Parameter
 
-   + merchant_ref_num : `merchantRefNum-145` -This is the merchant reference number created by the merchant and submitted as part of the request.
+   + merchant_ref_num : `merchantRefNum-108` -This is the merchant reference number created by the merchant and submitted as part of the request.
 
 + Response 200 (application/json)
 
@@ -1217,35 +1129,39 @@ Click on above to fetch the payments by merchant refernce number.
             {
               "payments": [
                 {
-                  "id": "8190c675-6d68-4cd7-a29c-55b406addaeb",
-                  "amount": 40,
-                  "merchantRefNum": "merchantRefNum-145",
-                  "settleWithAuth": false,
-                  "paymentHandleToken": "SChfCGCURe5NiLIv",
-                  "authCode": "107212",
-                  "txnTime": 1544108515000,
-                  "customerIp": "10.10.12.64",
-                  "description": "Magazine subscription",
-                  "currencyCode": "GBP",
-                  "status": "COMPLETED",
-                  "avsResponse": "MATCH",
-                  "cvvVerification": "MATCH",
-                  "availableToSettle": 40,
-                  "merchantDescriptor": {
-                    "dynamicDescriptor": "54321",
-                    "phone": "333-123456789"
-                  }
-                }
+              "id": "3aeb9c63-6386-46a3-9f8e-f452e722228a",
+              "amount": 190,
+              "merchantRefNum": "merchantRefNum-108",
+              "settleWithAuth": false,
+              "paymentHandleToken": "SCZJg09GWSv36NLB",
+              "txnTime": "2018-12-09T11:05:24+0000",
+              "customerIp": "10.10.12.64",
+              "dupCheck": true,
+              "description": "Magazine subscription",
+              "currencyCode": "GBP",
+              "status": "COMPLETED",
+              "availableToSettle": 1900,
+              "gatewayResponse": {
+                "authCode": "135880",
+                "avsResponse": "MATCH",
+                "cvvVerification": "MATCH"
+              },
+              "merchantDescriptor": {
+                "dynamicDescriptor": "54321",
+                "phone": "333-123456789"
+              }
+            }
               ]
             }
 
 # Group Void Authorizations 
 
-Void Authorization allow merchants to cancel/void authorisation. 
+## Void Authorizations [ ]
+Void Authorization allow merchants to cancel/void a Payment.
 
 ### Void an Authorization [POST /v1/payments/{PAYMENT_ID}/voidauths]
 
-Click on Void an Authorization above to see how to submit a Void Authorization request. You can void an Authorization only if it has not yet been settled.
+Click on **Void an Authorization** above to see how to submit a Void Authorization request. You can void an Authorization **only if** it has not yet been settled.
 
 + Parameter
 
@@ -1280,7 +1196,7 @@ Click on Void an Authorization above to see how to submit a Void Authorization r
 
 ### Get Void Authorization [GET /v1/voidauths/{VOID_AUTH_ID}]
 
-Click on Get Void Authorization above to see how to look up a Void Authorization request using the ID returned in the response to the original request.
+Click on **Get Void Authorization** above to see how to look up a Void Authorization request using the ID returned in the response to the original request.
 
 + Parameter
 
@@ -1301,7 +1217,7 @@ Click on Get Void Authorization above to see how to look up a Void Authorization
             
 ### Get Void Authorization Using Merchant Reference Number [GET /v1/voidauths?merchantRefNum={MERCHANT_REF_NUM}]
 
-Click on Get Void Authorization Using Merchant Reference Number above to see how to look up a Void Authorization request using the merchant reference number used in the original request.
+Click on **Get Void Authorization Using Merchant Reference Number** above to see how to look up a Void Authorization request using the merchant reference number used in the original request.
 
 + Parameter
 
@@ -1327,16 +1243,15 @@ Click on Get Void Authorization Using Merchant Reference Number above to see how
 
 ## Settlements [/v1/payments/{payment_id}/settlements]
 
-Settlement with dupCheck and merchentRefNum
-
 + Parameter
 
     + payment_id : `c64ecbf2-a942-4f7c-b412-70217a0eb16e` - This is the ID returned in the response to the Payments request.
 
-### Post Settlement [POST]
+### Settlement [POST]
+Click on **Settlement** above to see three examples of a Settlement request:
 
-- A regular Settlement, where the initial request was an Authorization that now has to be settled
-- A partial Settlement, where only part of the initial Authorization is settled, leaving the balance to be settled later
+- A regular Settlement, where the initial request was a Payment that now has to be settled
+- A partial Settlement, where only part of the initial Payment is settled, leaving the balance to be settled later
 - A Settlement that is split into multiple merchant accounts, for merchant accounts that are configured to do so
 
 + Request (application/json)
@@ -1370,9 +1285,7 @@ Settlement with dupCheck and merchentRefNum
 
 ### Cancel a Settlement [PUT /v1/settlement/{settlement_id}]
 
-To cancel a yet to be settled transaction where the Payment Handle is in completed state
-- Settlement with dupCheck and merchentRefNum
-- Partial Settlement with amount in Request Body 
+Click on **Cancel a Settlement** above to see how to submit a Cancel Settlement request for Payments that are yet to be settled
 
 + Parameter
 
@@ -1403,7 +1316,7 @@ To cancel a yet to be settled transaction where the Payment Handle is in complet
 
 ### Get Settlements [GET /v1/settlements/{settlement_id}]
 
-Click on Get Settlements above to see how to fetch the settlements by settlement_id.
+Click on **Get Settlements** above to see how to look up a Settlements request using the ID returned in the response to the original request.
 
 + Parameter
 
@@ -1424,7 +1337,7 @@ Click on Get Settlements above to see how to fetch the settlements by settlement
             
 ### Get Settlements by Merchant Reference number [GET /v1/settlements?merchantRefNum={merchant_ref_num}]
 
-Click on above to fetch the Settlements by merchant refernce number.
+Click on **Get Settlement Using Merchant Reference Number** above to see how to look up a Settlement using the merchant reference number used in the original request.
 
 + Parameter
 
@@ -1451,16 +1364,15 @@ Click on above to fetch the Settlements by merchant refernce number.
 
 ## Refunds [/v1/settlements/{settlement_id}/refunds]
 
-The settlement details in case of Card payment method can be sent through Request Body
+The settlement transaction can be refunded using the API
 
 + Parameter
 
     + settlement_id : `d9bcfd85-8aa6-469d-80a3-e2ca196544da`
 
-### Post Refund [POST]
+### Refund [POST]
 
-- A regular Refund
-- A Refund that is split into multiple merchant accounts, for merchant accounts that are configured to do so
+Click on Refund above to see how to submit a Refund request for an already settled payment
 
 + Request (application/json)
 
@@ -1490,9 +1402,9 @@ The settlement details in case of Card payment method can be sent through Reques
               "status": "PENDING"
             }
             
-### Cancel Refund [PUT /v1/refunds/{refund_id}]
+### Cancel a Refund [PUT /v1/refunds/{refund_id}]
 
-Click on Cancel a Refund above to see how to submit a Cancel Refund request.
+Click on **Cancel a Refund** above to see how to submit a Cancel Refund request.
 
 + Parameter
 
@@ -1522,7 +1434,7 @@ Click on Cancel a Refund above to see how to submit a Cancel Refund request.
             
 ### Get Refund [GET /v1/refunds/{refund_id}]
 
-Click on above to fetch the Refunds by Id.
+Click on **Get Refunds** above to see how to look up a Refunds request using the ID returned in the response to the original request.
 
 + Parameter
 
@@ -1542,7 +1454,7 @@ Click on above to fetch the Refunds by Id.
             
 ### Get Refunds by Merchant Reference number [GET /v1/refunds?merchantRefNum={merchant_ref_num}]
 
-Click on above to fetch the Refunds by merchant refernce number.
+Click on **Get Refunds Using Merchant Reference Number** above to see how to look up a Refund using the merchant reference number used in the original request.
 
 + Parameter
 
@@ -1568,11 +1480,13 @@ Click on above to fetch the Refunds by merchant refernce number.
 
 ## Standalone Credits [/v1/standalonecredits]
 
-Standalone Credits allow merchants to issue credits to cardholders without requiring a previous Authorization/Settlement.
+Standalone Credits allow merchants to issue credits to cardholders without requiring a previous Payment/Settlement.
 
-### Post Standalone Credit [POST]
+**Note:** If your merchant category code (MCC) is listed as able to [process Original Credits](#reference/original-credits/post-standalone-credit), you must not use Standalone Credits.
 
-- Credit with original Card information with Payment Handle Token
+### Standalone Credit [POST]
+
+Click on **Standalone Credit** above to see how to submit a Standalone Credit with Payment Handle Token
 
 
 + Request (application/json)
@@ -1602,20 +1516,7 @@ Standalone Credits allow merchants to issue credits to cardholders without requi
               "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
               "amount": 40,
               "merchantRefNum": "merchantRefNum-151",
-              "card": {
-                "cardExpiry": {
-                  "month": "10",
-                  "year": "2020"
-                },
-                "lastDigits": "0003"
-              },
-              "billingDetails": {
-                "street": "100 Queen",
-                "street2": "Unit 201",
-                "city": "Toronto",
-                "country": "CA",
-                "zip": "M5H2N2"
-              },
+              "paymentHandleToken": "SC9mbfZSITB5OwDJ",
               "customerIp": "204.91.0.12",
               "currencyCode": "GBP",
               "status": "PENDING",
@@ -1624,11 +1525,11 @@ Standalone Credits allow merchants to issue credits to cardholders without requi
             
 ### Cancel Standalone Credit [PUT /v1/standalonecredits/{standalone_credit_id}]
 
-Click on Cancel a Standalone Credit above to see how to submit a Cancel Standalone Credit request.
+Click on **Cancel a Standalone Credit** above to see how to submit a Cancel Standalone Credit request.
 
 + Parameter
 
-    + standalone_credit_id : `e075f2ae-dfc4-4f6d-8d89-61158367b6a6`
+    + standalone_credit_id : This is the ID returned in the response to the Standalone Credit request. Example: 86dcb68d-cbd0-4878-8da7-ffc0e6554513.
     
 
 + Request (application/json)
@@ -1656,11 +1557,11 @@ Click on Cancel a Standalone Credit above to see how to submit a Cancel Standalo
 
 ### Get Standalone Credit [GET /v1/standalonecredits/{standalone_credit_id}]
 
-Click on Get Standalone Credit above to see how to look up a Standalone Credit request using the ID returned in the response to the original request.
+Click on **Get Standalone Credit** above to see how to look up a Standalone Credit request using the ID returned in the response to the original request.
 
 + Parameter
 
-    + standalone_credit_id : `e075f2ae-dfc4-4f6d-8d89-61158367b6a6`
+    + standalone_credit_id : This is the ID returned in the response to the Standalone Credit request. Example: 86dcb68d-cbd0-4878-8da7-ffc0e6554513.
 
 + Response 200 (application/json)
 
@@ -1670,20 +1571,7 @@ Click on Get Standalone Credit above to see how to look up a Standalone Credit r
               "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
               "amount": 40,
               "merchantRefNum": "merchantRefNum-151",
-              "card": {
-                "cardExpiry": {
-                  "month": "10",
-                  "year": "2020"
-                },
-                "lastDigits": "0003"
-              },
-              "billingDetails": {
-                "street": "100 Queen",
-                "street2": "Unit 201",
-                "city": "Toronto",
-                "country": "CA",
-                "zip": "M5H2N2"
-              },
+              "paymentHandleToken": "SC9mbfZSITB5OwDJ",
               "customerIp": "204.91.0.12",
               "currencyCode": "GBP",
               "status": "PENDING",
@@ -1692,11 +1580,11 @@ Click on Get Standalone Credit above to see how to look up a Standalone Credit r
             
 ### Get Standalone Credit Using Merchant Reference Number  [GET /v1/standalonecredits?merchantRefNum={merchantRefNum}]
 
-Click on Get Standalone Credit Using Merchant Reference Number above to see how to look up a Standalone Credit using the merchant reference number used in the original request.
+Click on **Get Standalone Credit Using Merchant Reference Number** above to see how to look up a Standalone Credit using the merchant reference number used in the original request.
 
 + Parameter
 
-   + merchantRefNum : "merchantRefNum-151"
+   + merchantRefNum : merchantRefNum-151 - This is the merchant reference number created by the merchant and submitted as part of the request. 
 
 + Response 200 (application/json)
 
@@ -1708,20 +1596,7 @@ Click on Get Standalone Credit Using Merchant Reference Number above to see how 
                   "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
                   "amount": 40,
                   "merchantRefNum": "merchantRefNum-151",
-                  "card": {
-                    "cardExpiry": {
-                      "month": "10",
-                      "year": "2020"
-                    },
-                    "lastDigits": "0003"
-                  },
-                  "billingDetails": {
-                    "street": "100 Queen",
-                    "street2": "Unit 201",
-                    "city": "Toronto",
-                    "country": "CA",
-                    "zip": "M5H2N2"
-                  },
+                  "paymentHandleToken": "SC9mbfZSITB5OwDJ",
                   "customerIp": "204.91.0.12",
                   "currencyCode": "GBP",
                   "status": "PENDING",
@@ -1736,11 +1611,23 @@ Click on Get Standalone Credit Using Merchant Reference Number above to see how 
 
 ## Original Credits [/v1/originalcredits]
 
-Original Credits allow merchants with specific merchant category codes (MCCs) to issue winnings as credits to cardholders, without requiring a previous Authorization/Settlement.
+Original Credits allow merchants with specific merchant category codes (MCCs) to issue winnings as credits to cardholders, without requiring a previous Payment/Settlement.
+
+Merchants with the following MCCs can process Original Credits:
+
+- 4829
+- 6012
+- 6051
+- 6211
+- 6540
+- 7299
+- 7994
+- 7995
+- 8999
 
 ### Original Credit [POST]
 
-- An Original Credit request using a Payment Handle token.
+Click on **Original Credit** above to see how to submit a Original Credit using Payment Handle Token.
 
 + Request (application/json)
 
@@ -1769,20 +1656,7 @@ Original Credits allow merchants with specific merchant category codes (MCCs) to
               "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
               "amount": 40,
               "merchantRefNum": "merchantRefNum-151",
-              "card": {
-                "cardExpiry": {
-                  "month": "10",
-                  "year": "2020"
-                },
-                "lastDigits": "0003"
-              },
-              "billingDetails": {
-                "street": "100 Queen",
-                "street2": "Unit 201",
-                "city": "Toronto",
-                "country": "CA",
-                "zip": "M5H2N2"
-              },
+              "paymentHandleToken": "SC9mbfZSITB5OwDJ",
               "customerIp": "204.91.0.12",
               "currencyCode": "GBP",
               "status": "PENDING",
@@ -1791,7 +1665,7 @@ Original Credits allow merchants with specific merchant category codes (MCCs) to
 
 ### Cancel an Original Credit [PUT /v1/originalcredits/{original_credit_id}]
 
-Click on Cancel an Original Credit above to see how to submit a Cancel Original Credit request.
+Click on **Cancel an Original Credit** above to see how to submit a Cancel Original Credit request.
 
 + Parameter
 
@@ -1822,7 +1696,7 @@ Click on Cancel an Original Credit above to see how to submit a Cancel Original 
 
 ### Get Original Credit [GET /v1/originalcredits/{original_credit_id}]
 
-Click on Get Original Credit above to see how to look up an Original Credit request using the ID returned in the response to the original request.
+Click on **Get Original Credit** above to see how to look up an Original Credit request using the ID returned in the response to the original request.
 
 + Parameter
 
@@ -1839,41 +1713,15 @@ Click on Get Original Credit above to see how to look up an Original Credit requ
               "txnTime": "2017-07-06T19:59:17Z",
               "status": "PENDING",
               "amount": 1000,
-              "card": {
-                "type": "VI",
-                "lastDigits": "1111",
-                "cardExpiry": {
-                  "month": 2,
-                  "year": 2019
-                }
-              },
-              "profile": {
-                "firstName": "Joe",
-                "lastName": "Smith",
-                "email": "Joe.Smith@canada.com"
-              },
-              "billingDetails": {
-                "street": "100 Queen Street West",
-                "city": "Toronto",
-                "state": "ON",
-                "country": "CA",
-                "zip": "M5H2N2"
-              },
+              "paymentHandleToken": "SC9mbfZSITB5OwDJ",
               "customerIp": "204.91.0.12",
               "description": "Winning payment from Loto",
-              "currencyCode": "CAD",
-              "accountId": "123456789",
-              "links": [
-                {
-                  "rel": "self",
-                  "href": "https://api.test.paysafe.com/cardpayments/v1/originalcredits/86dcb68d-cbd0-4878-8da7-ffc0e6554513"
-                }
-              ]
+              "currencyCode": "CAD"
             }
             
 ### Get Original Credit Using Merchant Reference Number [GET /v1/originalcredits?merchantRefNum={merchantRefNum}]
 
-Click on Get Original Credit Using Merchant Reference Number above to see how to look up an Original Credit request using the merchant reference number used in the original request.
+Click on **Get Original Credit Using Merchant Reference Number** above to see how to look up an Original Credit request using the merchant reference number used in the original request.
 
 + Parameter
 
@@ -1884,25 +1732,12 @@ Click on Get Original Credit Using Merchant Reference Number above to see how to
    + Body
 
             {
-              "standaloneCredits": [
+              "originalCredits": [
                 {
                   "id": "e075f2ae-dfc4-4f6d-8d89-61158367b6a6",
                   "amount": 40,
                   "merchantRefNum": "merchantRefNum-151",
-                  "card": {
-                    "cardExpiry": {
-                      "month": "10",
-                      "year": "2020"
-                    },
-                    "lastDigits": "0003"
-                  },
-                  "billingDetails": {
-                    "street": "100 Queen",
-                    "street2": "Unit 201",
-                    "city": "Toronto",
-                    "country": "CA",
-                    "zip": "M5H2N2"
-                  },
+                  "paymentHandleToken": "SC9mbfZSITB5OwDJ",
                   "customerIp": "204.91.0.12",
                   "currencyCode": "GBP",
                   "status": "PENDING",
@@ -1943,26 +1778,23 @@ Verification allows merchants to validate a credit card without charging any amo
 
             {
               "id": "71aea8ae-e801-4df3-9436-c5a61c88d3ad",
-              "card": {
-                "cardExpiry": {
-                  "month": "12",
-                  "year": "2020"
-                },
-                "lastDigits": "2222"
-              },
+              "paymentHandleToken": "SCUgzJL5jlRIKCiX",
               "merchantRefNum": "20095817730019123",
               "customerIp": "10.10.12.64",
+              "currencyCode": "USD",
               "description": "Some description",
               "txnTime": 1544444372000,
+              "gatewayResponse" : {
               "authCode": "XXXXXX",
-              "currencyCode": "USD",
-              "cvvVerification": "NOT_PROCESSED",
+              "avsResponse" : "MATCH",
+              "cvvVerification": "NOT_PROCESSED"
+              },
               "status": "COMPLETED"
             }
 
 ### Get Verification [GET /v1/verifications/{VERIFICATION_ID}]
 
-Click on Get Verification above to see how to look up a Verification request using the ID returned in the response to the original request.
+Click on **Get Verification** above to see how to look up a Verification request using the ID returned in the response to the original request.
 
 + Parameter
 
@@ -1975,26 +1807,23 @@ Click on Get Verification above to see how to look up a Verification request usi
 
             {
               "id": "71aea8ae-e801-4df3-9436-c5a61c88d3ad",
-              "card": {
-                "cardExpiry": {
-                  "month": "12",
-                  "year": "2020"
-                },
-                "lastDigits": "2222"
-              },
+              "paymentHandleToken": "SCUgzJL5jlRIKCiX",
               "merchantRefNum": "20095817730019123",
               "customerIp": "10.10.12.64",
+              "currencyCode": "USD",
               "description": "Some description",
               "txnTime": 1544444372000,
+              "gatewayResponse" : {
               "authCode": "XXXXXX",
-              "currencyCode": "USD",
-              "cvvVerification": "NOT_PROCESSED",
+              "avsResponse" : "MATCH",
+              "cvvVerification": "NOT_PROCESSED"
+              },
               "status": "COMPLETED"
             }
             
 ### Get Verification Using Merchant Reference Number [GET /v1/verifications?merchantRefNum={MERCHANT_REF_NUM}]
 
-Click on Get Verification Using Merchant Reference Number above to see how to look up a Verification request using the merchant reference number used in the original request.
+Click on **Get Verification Using Merchant Reference Number** above to see how to look up a Verification request using the merchant reference number used in the original request.
 
 + Parameter
 
@@ -2007,46 +1836,19 @@ Click on Get Verification Using Merchant Reference Number above to see how to lo
             {
               "verifications": [
                 {
-                  "id": "9650bbcb-3878-4f81-b9cc-663e01ce010b",
-                  "card": {
-                    "cardExpiry": {
-                      "month": "12",
-                      "year": "2020"
-                    },
-                    "lastDigits": "2222"
-                  },
-                  "merchantRefNum": "20095817730019123",
-                  "customerIp": "10.10.12.64",
-                  "description": "Some description",
-                  "txnTime": 1544079866000,
-                  "currencyCode": "USD",
-                  "cvvVerification": "NOT_PROCESSED",
-                  "status": "FAILED",
-                  "error": {
-                    "code": "4002",
-                    "message": "The transaction was declined by our Risk Management department."
-                  },
-                  "riskReasonCode": [
-                    4105
-                  ]
-                },
-                {
-                  "id": "71aea8ae-e801-4df3-9436-c5a61c88d3ad",
-                  "card": {
-                    "cardExpiry": {
-                      "month": "12",
-                      "year": "2020"
-                    },
-                    "lastDigits": "2222"
-                  },
-                  "merchantRefNum": "20095817730019123",
-                  "customerIp": "10.10.12.64",
-                  "description": "Some description",
-                  "txnTime": 1544444372000,
-                  "authCode": "XXXXXX",
-                  "currencyCode": "USD",
-                  "cvvVerification": "NOT_PROCESSED",
-                  "status": "COMPLETED"
-                }
+              "id": "71aea8ae-e801-4df3-9436-c5a61c88d3ad",
+              "paymentHandleToken": "SCUgzJL5jlRIKCiX",
+              "merchantRefNum": "20095817730019123",
+              "customerIp": "10.10.12.64",
+              "currencyCode": "USD",
+              "description": "Some description",
+              "txnTime": 1544444372000,
+              "gatewayResponse" : {
+              "authCode": "XXXXXX",
+              "avsResponse" : "MATCH",
+              "cvvVerification": "NOT_PROCESSED"
+              },
+              "status": "COMPLETED"
+            }
               ]
             }
