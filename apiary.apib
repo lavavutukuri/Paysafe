@@ -3,81 +3,9 @@ HOST: https://api.test.paysafe.com/paymenthub
 
 # Payments API 
 
-### Authentication
-
-In order for you to use the Paysafe Payments API, Paysafe must first set you up on their system and provide you with an API key. Your API key looks something like this:
-
-* Key Username – MerchantXYZ
-* Key Password – B-tst1-0-51ed39e4-312d02345d3f123120881dff9bb4020a89e8ac44cdfdcecd702151182fdc952272661d290ab2e5849e31bb03deede7e
-
-Note that this is not the same as your Merchant Back Office username and password.
-The case-sensitive API key is sent using HTTP Basic Authentication. To use HTTP Basic Authentication, you must send the API key credentials using the Authorization header with every request. The Authorization header is constructed as follows:
-
-- The Key Username and Key Password are combined into a string separated by a colon, e.g.,“Key Username:Key Password”.
-- The resulting string literal is then encoded using Base64.
-- The authorization method and a space (i.e., “Basic”) are then put before the encoded string.
-
-For example, using the Key Username and Password examples above, the header is formed as follows:
-
-`Authorization: Basic TWVyY2hhbnRYWVo6Qi10c3QxLTAtNTFlZDM5ZTQtMzEyZDAyMzQ1ZDNmMTIzMTIwODgxZGZmOWJiNDAyMGE4OWU4YWM0NGNkZmRjZWNkNzAyMTUxMTgyZmRjOTU yMjcyNjYxZDI5MGFiMmU1ODQ5ZTMxYmIwM2RlZWRlN2U=`
-
-For additional details, please refer to http://en.wikipedia.org/wiki/Basic\_access\_authentication.
-
-### URLs
-
-###### Test URL
-
-In order to test your integration with Paysafe, use the following Test URL:<br>
-https://api.test.paysafe.com <br>
-
-
-For example:<br>
-https://api.test.paysafe.com/paymenthub/v1/paymenthandles
-
-###### Production URL
-
-In order to process live requests with Paysafe, use the following Production URL:<br>
-https://api.paysafe.com<br>
-
-For example:<br>
-https://api.paysafe.com/paymenthub/v1/paymenthandles
-
-
-### Global Invalid Characters
-
-You must not include any of the characters in the following table as values in any of your request parameters. If you do, your request will result in an error.
-|Character|HEX|Description|
-|---------|-------|---------------|
-|"|22|Double quotes (or speech marks)|
-|;|3B|Semicolon|
-|^|5E|Caret, circumflex|
-|*|2A|Asterisk|
-|<|3C|Less than (or open angled bracket)|
-|/|2F|Slash or divide|
-|[|5B|Opening bracket|
-|]|5D|Closing bracket|
-|\\|5C|Backslash|
-
-
-### API
-
-The Payments API allows merchants to process transactions using the REST protocol. The protocol uses JSON for all requests and responses.
-The following request types are supported:
-+ [Payment Handles](#reference/payment-handles)
-+ [Payments](#reference/payments)
-+ [Void Authorization](#reference/void-authorizations)
-+ [Settlements](#reference/settlements)
-+ [Refunds](#reference/refunds)
-+ [Standalone Credits](#reference/standalone-credits)
-+ [Original Credits](#reference/original-credits)
-+ [Verifications]()
-
-
-
 ### Getting Started
 
-Paysafe **'Payments API'** makes integration with multiple payment methods possible via a single endpoint, 
-which also simplifies the development effort for a new payment method integration to a bare minimum.
+Paysafe **'Payments API'** allows merchants to collect Payments via multiple payment methods using a single endpoint integration.
 
 ###### Supported Payment Methods
 The following payment methods are currently supported by the Payments API,
@@ -170,7 +98,75 @@ This is typically used by merchants (with MCC Codes other than that specified fo
 In the above scenario, the merchant creates a payment handle and then makes a Standalone Credit request once the payment handle has become 'Payable'.
 
 
-### Testing Instructions
+### Authentication
+
+In order for you to use the Paysafe Payments API, Paysafe must first set you up on their system and provide you with an API key. Your API key looks something like this:
+
+* Key Username – MerchantXYZ
+* Key Password – B-tst1-0-51ed39e4-312d02345d3f123120881dff9bb4020a89e8ac44cdfdcecd702151182fdc952272661d290ab2e5849e31bb03deede7e
+
+Note that this is not the same as your Merchant Portal username and password.
+The case-sensitive API key is sent using HTTP Basic Authentication. To use HTTP Basic Authentication, you must send the API key credentials using the Authorization header with every request. The Authorization header is constructed as follows:
+
+- The Key Username and Key Password are combined into a string separated by a colon, e.g.,“Key Username:Key Password”.
+- The resulting string literal is then encoded using Base64.
+- The authorization method and a space (i.e., “Basic”) are then put before the encoded string.
+
+For example, using the Key Username and Password examples above, the header is formed as follows:
+
+`Authorization: Basic TWVyY2hhbnRYWVo6Qi10c3QxLTAtNTFlZDM5ZTQtMzEyZDAyMzQ1ZDNmMTIzMTIwODgxZGZmOWJiNDAyMGE4OWU4YWM0NGNkZmRjZWNkNzAyMTUxMTgyZmRjOTU yMjcyNjYxZDI5MGFiMmU1ODQ5ZTMxYmIwM2RlZWRlN2U=`
+
+For additional details, please refer to http://en.wikipedia.org/wiki/Basic\_access\_authentication.
+
+### URLs
+
+###### Test URL
+
+In order to test your integration with Paysafe, use the following Test URL:<br>
+https://api.test.paysafe.com <br>
+
+
+For example:<br>
+https://api.test.paysafe.com/paymenthub/v1/paymenthandles
+
+###### Production URL
+
+In order to process live requests with Paysafe, use the following Production URL:<br>
+https://api.paysafe.com<br>
+
+For example:<br>
+https://api.paysafe.com/paymenthub/v1/paymenthandles
+
+
+### Global Invalid Characters
+
+You must not include any of the characters in the following table as values in any of your request parameters. If you do, your request will result in an error.
+|Character|HEX|Description|
+|---------|-------|---------------|
+|"|22|Double quotes (or speech marks)|
+|;|3B|Semicolon|
+|^|5E|Caret, circumflex|
+|*|2A|Asterisk|
+|<|3C|Less than (or open angled bracket)|
+|/|2F|Slash or divide|
+|[|5B|Opening bracket|
+|]|5D|Closing bracket|
+|\\|5C|Backslash|
+
+
+### API
+
+The Payments API allows merchants to process transactions using the REST protocol. The protocol uses JSON for all requests and responses.
+The following request types are supported:
++ [Payment Handles](#reference/payment-handles)
++ [Payments](#reference/payments)
++ [Void Authorization](#reference/void-authorizations)
++ [Settlements](#reference/settlements)
++ [Refunds](#reference/refunds)
++ [Standalone Credits](#reference/standalone-credits)
++ [Original Credits](#reference/original-credits)
++ [Verifications](#reference/verifications)
+
 
 
 ### Error Summary
@@ -319,6 +315,31 @@ To configure and test the API examples, first click on one of the API calls in t
 - Mock server – This environment simply returns the dummy values in the example response irrespective of the parameters you supply. You do not need to use your account ID or Test API key for this request.
 
 To call the API resource, click **Call Resource**. The response is displayed in the Console window.
+
+### Testing Instructions
+
+###### Overview
+The Paysafe Test environment can be used to test websites or applications without running transactions through the Production (live) processing platform. Payment transactions (e.g., credit card payments) processed in the Test environment are not sent to the banking network, but through a simulator. Depending on the information provided with the transaction request, the simulator returns either a successful (approved) or failed (declined) response.
+
+With the Paysafe 'Payments API' you can test the following:
+- Verify support for all the operation types that you require.
+- Review all common errors as well as errors that may occur for each operation, and ensure your application can handle them.
+- Verify the lengths and format for all attributes you send.
+
+###### Applying for a Test Account
+For access to Test Accounts and credentials, please contact your business relationship manager or reach out to {contact email address}
+
+Your Test account will provide you with access to a Test version of the Paysafe Merchant Portal, where you can view the status of your Test transactions. Once logged in to the Portal you should also retrieve your API Keys (choose Developer Center > API Keys) which is Base64 encoded.
+
+The default Test account can be used for processing Card, PaysafeCash, Paysafecard, Neteller and Skrill payments with processing currency set to USD. You can choose to enable any of the payment method and currency combination in your live account by filling the onboarding application form which you can get from your business relationship manager.
+
+`All your payment methods will be set up to use the same API key.`
+
+###### Test and Production Accounts
+Test accounts enable you to process API transactions that mirror the functionality on the Production environment. Once you are satisfied with your integration to the Test environment, you will need to repeat any configuration changes made to your Test account on the Production account. Keep a record of any changes requested and carried out.
+
+You will need to use different API endpoints and authentication credentials to connect to the Paysafe Production environment.
+
 
 # Data Structures
 
@@ -480,7 +501,7 @@ To call the API resource, click **Call Resource**. The response is displayed in 
 ## PaymentHandleRequest (object)
 
 + id: `length <=36` - This is the ID returned in the response. This ID can be used to retrive the payment handle details using associated GET call.
-+ merchantRefNum: `length <= 100` - This is the merchant reference number created by the merchant and submitted as part of the request. It's recommended to provide unique for each request.
++ merchantRefNum: `length <= 255` - This is the merchant reference number created by the merchant and submitted as part of the request. It should be unique for each request.
 + transactionType (transactionTypeAttributes, required) - This specifies for which transaction type Payment Handle is created.
 + status (paymentHandleStatusAttributes) - This is the status of the payment handle.
 + usage (enum) - Payment handle usage - whether single of multi use
@@ -490,8 +511,8 @@ To call the API resource, click **Call Resource**. The response is displayed in 
     + CARD
     + SKRILL
     + NETELLER
-    + PAYSAFE_CASH
-    + PAYSAFE_CARD
+    + PAYSAFECASH
+    + PAYSAFECARD
 + action (enum) - The associated action that needs to be done by merchant for this payment handle to make it PAYABLE
     + NONE - No action is required. Typical for card flows without 3DS.
     + REDIRECT - The integration needs to redirect the user to a specific APM for completion of a payment or getting necessary details to complete a payment, or to complete an OAuth registration flow in case of creation of multi use payment handle. Typical for most APMs and 3DS cards.
@@ -574,7 +595,7 @@ To call the API resource, click **Call Resource**. The response is displayed in 
 + accorD(accordDRequest) - These are parameters for financing plans supported for certain merchant configurations.
         Include this element only when instructed to do so by NETBANX.
 + recipient(recipientAttributes) - This is recipient information.
-+ riskReasonCode (array) - An array of integers is returned, displaying the detailed risk reason codes if your transaction was declined. It is returned only if your account is configured accordingly.
++ riskReasonCode (riskReasonCodeSample) - An array of integers is returned, displaying the detailed risk reason codes if your transaction was declined. It is returned only if your account is configured accordingly.
 + splitPay (splitpayAttributes) - NOTE: For splitpay transactions only.
         An array containing the linked accounts and the amount shared with each. You must include either amount or percent. However, you cannot include both values.
 + storedCredential(storedCredentialDetailsAttributes) - The storedCredential object is used to identify authorization requests that use stored credentials for a consumer, in order to improve authorization rates and reduce fraud. Stored credentials can be used in two cases:
@@ -610,7 +631,7 @@ Using a card number – An authorization request that uses a credit card number 
 + error(errorAttributes) - Details of the error.
 + splitPay (splitpayAttributes) - NOTE: For splitpay transactions only.
         An array containing the linked accounts and the amount shared with each. You must include either amount or percent. However, you cannot include both values.
-+ riskReasonCode (array) - An array of integers is returned, displaying the detailed risk reason codes if your transaction was declined. It is returned only if your account is configured accordingly.        
++ riskReasonCode (riskReasonCodeSample) - An array of integers is returned, displaying the detailed risk reason codes if your transaction was declined. It is returned only if your account is configured accordingly.        
 
 
 ## SettlementResponse (object)
@@ -643,13 +664,16 @@ Using a card number – An authorization request that uses a credit card number 
 + status (statusAttributes) - This is the status of the transaction request.
 + gatewayResponse(gatewayRequest) - This is the raw response returned by an acquirer. It is returned only if your account is configured accordingly.
 + error(errorAttributes) - Details of the error.
-+ riskReasonCode (array) - An array of integers is returned, displaying the detailed risk reason codes if your transaction was declined. It is returned only if your account is configured accordingly.
++ riskReasonCode (riskReasonCodeSample) - An array of integers is returned, displaying the detailed risk reason codes if your transaction was declined. It is returned only if your account is configured accordingly.
+
+## riskReasonCodeSample (array)
++ 5500
 
 # Group Payment Methods
 
-## Fetch Available Payment Methods [/v1/paymentmethods]
+## Payment Methods [/v1/paymentmethods]
 
-### Payment Methods [GET /v1/paymentmethods?currencyCode={currencyCode}]
+### Fetch Available Payment Methods [GET /v1/paymentmethods?currencyCode={currencyCode}]
 
 Click on **Fetch Available Payment Methods** above to see how to get the list of all available payment methods that are enabled for your account. 
 
@@ -1070,7 +1094,6 @@ Click on **Get Payment Handle** above to see how to look up a Payment Handle req
               "executionMode": "SYNCHRONOUS",
               "customerIp": "172.0.0.1",
               "paymentHandleToken": "SC0YsGIIgFksiOsQ",
-              "paymentToken": "SC0YsGIIgFksiOsQ",
               "billingDetails": {
                 "street": "100 Queen",
                 "street2": "Unit 201",
@@ -1115,7 +1138,6 @@ Click on **Get Payment Handles by Merchant Reference Number** above to see how t
     + Body
 
             {
-              "paymenthandles": [{
               "id": "cc719995-59ed-4146-a936-b54db72bcaa8",
               "amount": 1900,
               "merchantRefNum": "merchantRefNum-130",
@@ -1157,8 +1179,7 @@ Click on **Get Payment Handles by Merchant Reference Number** above to see how t
                   "href": "https://usgaminggamblig/payment/return/failed",
                   "method": "GET"
                 }
-              ]
-            }}
+            }
 
 # Group Payments
 
@@ -1302,12 +1323,12 @@ Click on **Get Payments by Merchant Reference Number** above to see how to look 
 
 # Group Void Authorizations 
 
-## Void Authorizations [ ]
+## Void Authorizations [/v1/payments/{PAYMENT_ID}/voidauths]
 Void Authorization allow merchants to cancel/void a Payment.
 
-### Void an Authorization [POST /v1/payments/{PAYMENT_ID}/voidauths]
+### Void an Authorization [POST ]
 
-Click on **Void an Authorization** above to see how to submit a Void Authorization request. You can void an Authorization **only if** it has not yet been settled.
+Click on **Void an Authorization** above to see how to submit a Void Authorization request. You can void an Authorization **only if** the Payment is in completed state but has not yet been settled.
 
 + Parameter
 
@@ -1394,11 +1415,7 @@ Click on **Get Void Authorization Using Merchant Reference Number** above to see
     + payment_id : `c64ecbf2-a942-4f7c-b412-70217a0eb16e` - This is the ID returned in the response to the Payments request.
 
 ### Settlement [POST]
-Click on **Settlement** above to see three examples of a Settlement request:
-
-- A regular Settlement, where the initial request was a Payment that now has to be settled
-- A partial Settlement, where only part of the initial Payment is settled, leaving the balance to be settled later
-- A Settlement that is split into multiple merchant accounts, for merchant accounts that are configured to do so
+Click on **Settlement** above to see how to submit a Settlement request for a Payment that is completed state but yet to be settled.
 
 + Request (application/json)
 
@@ -1896,7 +1913,9 @@ Click on **Get Original Credit Using Merchant Reference Number** above to see ho
 
 Verification allows merchants to validate a credit card without charging any amount on the card. 
 
-### Verification [POST /v1/verifications]
+## Verification [/v1/verifications]
+
+### Verification [POST]
 
 Click on **Verification** above to see how to submit a Verification request using Payment Handle Token.
 
